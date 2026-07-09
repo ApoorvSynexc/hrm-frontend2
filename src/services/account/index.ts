@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks/useHttpClient'
 import type { Profile } from './types'
 
-export type { Profile, Role, RolePermission, PermissionSummary, Department, Designation } from './types'
+export type { Profile } from './types'
 
 export const accountKeys = {
   all: ['account'] as const,
