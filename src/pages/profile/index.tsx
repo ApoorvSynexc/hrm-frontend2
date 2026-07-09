@@ -1,7 +1,14 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type ComponentType } from 'react'
 import { FiBriefcase, FiMail, FiMoreHorizontal } from 'react-icons/fi'
 import { Avatar, Tabs, Typography } from '../../components'
 import { useSession } from '../../hooks'
+import { Field } from './common'
+import AboutTab from './about'
+import ProfileTab from './profile'
+import JobTab from './job'
+import DocumentsTab from './documents'
+import AssetsTab from './assets'
+import LearnTab from './learn'
 
 const TOP_TABS = [
   { key: 'about', label: 'About' },
@@ -12,28 +19,21 @@ const TOP_TABS = [
   { key: 'learn', label: 'Learn' },
 ]
 
-const SUB_TABS = [
-  { key: 'summary', label: 'Summary' },
-  { key: 'timeline', label: 'Timeline' },
-  { key: 'wall', label: 'Wall Activity' },
-  { key: 'awards', label: 'Awards' },
-]
-
-function formatDate(value: string | null | undefined): string {
-  if (!value) return '—'
-  return new Date(value).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
+const TOP_TAB_COMPONENTS: Record<string, ComponentType> = {
+  about: AboutTab,
+  profile: ProfileTab,
+  job: JobTab,
+  documents: DocumentsTab,
+  assets: AssetsTab,
+  learn: LearnTab,
 }
 
 export default function ProfilePage() {
   const { user } = useSession()
   const [topTab, setTopTab] = useState('about')
-  const [subTab, setSubTab] = useState('summary')
 
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
+  const ActiveTopTab = TOP_TAB_COMPONENTS[topTab] ?? AboutTab
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,94 +85,7 @@ export default function ProfilePage() {
 
       <Tabs items={TOP_TABS} active={topTab} onChange={setTopTab} className="pl-5" />
 
-      {topTab !== 'about' ? (
-        <EmptyState message={`${TOP_TABS.find((t) => t.key === topTab)?.label} coming soon.`} />
-      ) : (
-        <>
-          <div className="pl-5">
-            <Tabs
-              items={SUB_TABS}
-              active={subTab}
-              onChange={setSubTab}
-              variant="pill"
-              className="w-fit"
-            />
-          </div>
-
-          {subTab !== 'summary' ? (
-            <EmptyState message={`${SUB_TABS.find((t) => t.key === subTab)?.label} coming soon.`} />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <div className="flex flex-col gap-4 lg:col-span-2">
-                <Card title="Professional Summary">
-                  <p className="text-sm text-body">
-                    {user?.designation?.name ?? 'No summary added yet.'}
-                  </p>
-                </Card>
-
-                <Card title="Primary Details">
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-                    <Field label="First Name" value={user?.firstName} />
-                    <Field label="Last Name" value={user?.lastName} />
-                    <Field label="Gender" value={user?.gender} />
-                    <Field label="Date of Birth" value={formatDate(user?.dateOfBirth)} />
-                    <Field label="Marital Status" value={user?.maritalStatus} />
-                    <Field label="Employee Code" value={user?.employeeCode} />
-                    <Field label="Joining Date" value={formatDate(user?.joiningDate)} />
-                    <Field label="Employment Status" value={user?.employmentStatus} />
-                  </div>
-                </Card>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Card title="Skills">
-                  <p className="text-sm text-body">No skills added yet.</p>
-                  <button
-                    type="button"
-                    className="mt-3 text-sm font-medium text-accent hover:underline"
-                  >
-                    + Add skills
-                  </button>
-                </Card>
-
-                <Card title="Praise">
-                  <p className="text-sm text-body">No praise yet.</p>
-                </Card>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
-
-function Card({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="rounded-xl border border-border bg-surface p-5">
-      <Typography variant="h6" className="mb-3">
-        {title}
-      </Typography>
-      {children}
-    </div>
-  )
-}
-
-function Field({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div>
-      <p className="text-[11px] font-medium tracking-wide text-body/60 uppercase">{label}</p>
-      <p className="mt-0.5 text-sm text-heading">{value || '—'}</p>
-    </div>
-  )
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center">
-      <Typography variant="body-sm" color="body">
-        {message}
-      </Typography>
+      <ActiveTopTab />
     </div>
   )
 }

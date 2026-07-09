@@ -35,3 +35,9 @@ body {
   margin: 0;
   min-height: 100svh;
 }
+
+/* Browsers default <button> to a plain arrow cursor, not pointer (unlike
+   <a href>). Every clickable button in this app should read as clickable. */
+button:not(:disabled) {
+  cursor: pointer;
+}

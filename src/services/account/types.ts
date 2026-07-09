@@ -55,6 +55,7 @@ export type Profile = {
   employeeCode: string | null
   joiningDate: string | null
   hireDate: string | null
+  confirmationDate: string | null
   role: Role | null
   department: Department | null
   designation: Designation | null
