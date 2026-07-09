@@ -36,12 +36,17 @@ export function useRole({ listParams, roleId }: UseRoleOptions = {}) {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: roleKeys.all })
 
+  // Defaulted once and used for BOTH key and fn: observers from different
+  // useRole() calls can share one cache entry, and React Query may run any
+  // observer's queryFn on refetch — so it must never depend on this call
+  // having received listParams.
+  const params = listParams ?? { page: 1, limit: 10 }
+
   const getRoles = useQuery({
-    queryKey: roleKeys.list(listParams ?? { page: 1, limit: 10 }),
+    queryKey: roleKeys.list(params),
     queryFn: async () => {
-      const { page, limit } = listParams!
       const res = await http.get<Role[]>(
-        `/v1/config/role/list?pagination=true&page=${page}&limit=${limit}`,
+        `/v1/config/role/list?pagination=true&page=${params.page}&limit=${params.limit}`,
       )
       return { roles: res.data, meta: res.meta as RoleListMeta }
     },

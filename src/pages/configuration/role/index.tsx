@@ -1,44 +1,83 @@
 import { useState } from 'react'
-import { FiPlus } from 'react-icons/fi'
-import { Button, Table, type TableColumn } from '../../../components'
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi'
+import { Button, ConfirmDialog, Table, type TableColumn } from '../../../components'
 import { useRole, type Role } from '../../../services'
 import { ModuleHeader } from '../common'
+import ManageRoleModal from './manage'
 
 const PAGE_SIZE = 10
 
-const columns: TableColumn<Role>[] = [
-  { key: 'name', header: 'Role' },
-  {
-    key: 'description',
-    header: 'Description',
-    render: (row) => row.description || '—',
-  },
-  {
-    key: 'isSystem',
-    header: 'System Role',
-    width: '120px',
-    render: (row) => (row.isSystem ? 'Yes' : 'No'),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-  
-    width: '110px',
-    render: (row) => (
-      <span
-        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-          row.status === 'ACTIVE' ? 'bg-accent-bg text-accent' : 'bg-surface-2 text-body'
-        }`}
-      >
-        {row.status}
-      </span>
-    ),
-  },
-]
-
 export default function RoleModule() {
   const [page, setPage] = useState(1)
-  const { getRoles } = useRole({ listParams: { page, limit: PAGE_SIZE } })
+  const [manageOpen, setManageOpen] = useState(false)
+  const [editingRole, setEditingRole] = useState<Role | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
+
+  const { getRoles, deleteRole } = useRole({ listParams: { page, limit: PAGE_SIZE } })
+
+  const openCreate = () => {
+    setEditingRole(null)
+    setManageOpen(true)
+  }
+
+  const openEdit = (role: Role) => {
+    setEditingRole(role)
+    setManageOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return
+    deleteRole.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
+  }
+
+  const columns: TableColumn<Role>[] = [
+    { key: 'name', header: 'Role' },
+    {
+      key: 'description',
+      header: 'Description',
+      render: (row) => row.description || '—',
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '110px',
+      render: (row) => (
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            row.status === 'ACTIVE' ? 'bg-accent-bg text-accent' : 'bg-surface-2 text-body'
+          }`}
+        >
+          {row.status}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      width: '110px',
+      render: (row) => (
+        <div className="flex justify-end gap-1">
+          <button
+            type="button"
+            aria-label={`Edit ${row.name}`}
+            onClick={() => openEdit(row)}
+            className="rounded-lg p-2 text-body transition-colors hover:bg-surface-2 hover:text-heading"
+          >
+            <FiEdit2 size={15} />
+          </button>
+          <button
+            type="button"
+            aria-label={`Delete ${row.name}`}
+            onClick={() => setDeleteTarget(row)}
+            className="rounded-lg p-2 text-body transition-colors hover:bg-surface-2 hover:text-red-500"
+          >
+            <FiTrash2 size={15} />
+          </button>
+        </div>
+      ),
+    },
+  ]
 
   return (
     <div>
@@ -46,7 +85,7 @@ export default function RoleModule() {
         title="Roles"
         description="Define roles like HR Manager or Employee that group a set of permissions."
         action={
-          <Button size="sm" leftIcon={<FiPlus size={16} />}>
+          <Button size="sm" leftIcon={<FiPlus size={16} />} onClick={openCreate}>
             Add Role
           </Button>
         }
@@ -62,6 +101,21 @@ export default function RoleModule() {
         onPageChange={setPage}
         pageSize={PAGE_SIZE}
         totalItems={getRoles.data?.meta.totalRecords ?? 0}
+      />
+
+      <ManageRoleModal
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
+        role={editingRole}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Role"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        loading={deleteRole.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </div>
   )

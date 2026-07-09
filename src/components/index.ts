@@ -23,3 +23,9 @@ export type { TabsProps, TabItem, TabsVariant } from './Tabs'
 
 export { Card } from './Card'
 export type { CardProps } from './Card'
+
+export { Modal } from './Modal'
+export type { ModalProps } from './Modal'
+
+export { ConfirmDialog } from './ConfirmDialog'
+export type { ConfirmDialogProps } from './ConfirmDialog'
