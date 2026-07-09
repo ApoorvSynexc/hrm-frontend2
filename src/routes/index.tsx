@@ -3,6 +3,7 @@ import Login from '../pages/auth/login'
 import Home from '../pages/home'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PublicRoute } from './PublicRoute'
+import { AppLayout } from '../layout/AppLayout'
 
 export function AppRoutes() {
   return (
@@ -17,13 +18,14 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/home"
         element={
           <ProtectedRoute>
-            <Home />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/home" element={<Home />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

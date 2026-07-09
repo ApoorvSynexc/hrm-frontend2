@@ -4,6 +4,7 @@ import { joiResolver } from '@hookform/resolvers/joi'
 import { useNavigate } from 'react-router-dom'
 import { FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi'
 import { Button, TextField, Typography } from '../../../components'
+import { PalettePicker, ThemeToggle } from '../../../theme'
 import microsoftLogo from '../../../assets/svg/microsoft-logo.svg'
 import { ApiError } from '../../../lib'
 import { useAuth } from '../../../services'
@@ -36,6 +37,11 @@ export default function Login() {
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-surface px-4">
+      <div className="fixed right-4 top-4 z-50 flex items-center gap-2">
+        <PalettePicker />
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-lg font-bold text-accent-fg">
