@@ -151,15 +151,13 @@ export default function RolePermissionModule() {
   const isLoadingMatrix = getPermissions.isLoading || (Boolean(roleId) && getRolePermissions.isLoading)
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="shrink-0">
-        <ModuleHeader
-          title="Role Permissions"
-          description="Assign granular create/read/update/delete permissions to each role."
-        />
-      </div>
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto">
+      <ModuleHeader
+        title="Role Permissions"
+        description="Assign granular create/read/update/delete permissions to each role."
+      />
 
-      <div className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="w-full max-w-xs">
           <label htmlFor="role-permission-role" className="mb-1.5 block text-sm font-medium text-heading">
             Role
@@ -199,20 +197,20 @@ export default function RolePermissionModule() {
           </Typography>
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {isAdminRole && (
-            <div className="shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-600">
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-600">
               The Admin role has full access by default and its permissions cannot be modified.
             </div>
           )}
 
           {updatePermissions.isError && (
-            <Typography variant="body-sm" className="shrink-0 text-red-500">
+            <Typography variant="body-sm" className="text-red-500">
               {getErrorMessage(updatePermissions.error)}
             </Typography>
           )}
 
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <Typography variant="body-sm" color="body">
               {selected.size} of {permissions.length} permissions selected
             </Typography>
@@ -236,11 +234,11 @@ export default function RolePermissionModule() {
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-border">
+          <div className="overflow-x-auto rounded-xl border border-border">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="sticky top-0 z-10 bg-surface-2 px-4 py-3 text-left font-medium text-body">
+                <tr className="border-b border-border bg-surface-2">
+                  <th className="px-4 py-3 text-left font-medium text-body">
                     <label className="flex w-fit items-center gap-2">
                       <input
                         type="checkbox"
@@ -253,10 +251,7 @@ export default function RolePermissionModule() {
                     </label>
                   </th>
                   {actions.map((action) => (
-                    <th
-                      key={action}
-                      className="sticky top-0 z-10 bg-surface-2 px-4 py-3 text-center font-medium text-body"
-                    >
+                    <th key={action} className="px-4 py-3 text-center font-medium text-body">
                       <label className="flex flex-col items-center gap-1.5">
                         <span>{toTitleCase(action)}</span>
                         <input
