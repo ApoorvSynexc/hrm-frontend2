@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { joiResolver } from '@hookform/resolvers/joi'
 import { Button, Modal, TextField, Typography } from '../../../../components'
-import { ApiError } from '../../../../lib'
+import { getErrorMessage } from '../../../../lib'
 import { useRole, type Role } from '../../../../services'
 import { roleSchema, type RoleFormValues } from './validations'
 
@@ -11,14 +11,6 @@ type ManageRoleModalProps = {
   onClose: () => void
   /** Pass a role to edit it; omit for create. */
   role?: Role | null
-}
-
-function errorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    const body = error.body as { message?: string } | null
-    return body?.message ?? error.message
-  }
-  return 'Something went wrong. Please try again.'
 }
 
 export default function ManageRoleModal({ open, onClose, role }: ManageRoleModalProps) {
@@ -77,7 +69,7 @@ export default function ManageRoleModal({ open, onClose, role }: ManageRoleModal
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         {mutation.isError && (
           <Typography variant="body-sm" className="text-red-500">
-            {errorMessage(mutation.error)}
+            {getErrorMessage(mutation.error)}
           </Typography>
         )}
 

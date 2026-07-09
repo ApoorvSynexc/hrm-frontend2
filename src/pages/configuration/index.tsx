@@ -91,16 +91,16 @@ export default function ConfigurationPage() {
   const ActiveModule = MODULE_COMPONENTS[active] ?? Role
 
   return (
-    <div className="flex flex-col gap-3">
-      <div>
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="shrink-0">
         <Typography variant="h5">Configuration</Typography>
         <Typography variant="body-sm" color="body" className="mt-0.5">
           Manage organization structure, policies, and workflow settings.
         </Typography>
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row">
-        <aside className="shrink-0 rounded-xl border border-border bg-surface p-3 lg:w-64">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
+        <aside className="shrink-0 overflow-y-auto rounded-xl border border-border bg-surface p-3 lg:w-64">
           {MODULE_GROUPS.map((group) => (
             <div key={group.label} className="mb-4 last:mb-0">
               <p className="mb-2 px-2 text-[11px] font-semibold tracking-wider text-body/60 uppercase">
@@ -133,7 +133,7 @@ export default function ConfigurationPage() {
           ))}
         </aside>
 
-        <div className="min-w-0 flex-1 rounded-xl border border-border bg-surface p-5">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl border border-border bg-surface p-5">
           <ActiveModule />
         </div>
       </div>

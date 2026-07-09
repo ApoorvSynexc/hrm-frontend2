@@ -15,6 +15,19 @@ export class ApiError extends Error {
 export type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown }
 
 /**
+ * Not every error body follows the ApiResponse envelope (e.g. Joi validation
+ * middleware responds with `{ message, errors }` instead) — this only relies
+ * on the one field both shapes share.
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    const body = error.body as { message?: string } | null
+    return body?.message ?? error.message
+  }
+  return 'Something went wrong. Please try again.'
+}
+
+/**
  * Every backend endpoint responds with this envelope — never a bare payload.
  * `meta` carries pagination info (page, pageSize, total, ...) on list endpoints.
  */
