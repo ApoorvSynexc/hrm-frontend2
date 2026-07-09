@@ -34,8 +34,25 @@ export type HttpClient = {
 }
 
 type CreateHttpClientOptions = {
-  /** Called when a request comes back 401, before the ApiError is thrown. */
+  /** Called when a request comes back 401 and the refresh-then-retry below didn't recover it. */
   onUnauthorized?: (error: ApiError) => void
+}
+
+let refreshPromise: Promise<boolean> | null = null
+
+async function refreshAccessToken(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${BASE_URL}/v1/auth/refresh-token`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .then((res) => res.ok)
+      .catch(() => false)
+      .finally(() => {
+        refreshPromise = null
+      })
+  }
+  return refreshPromise
 }
 
 /**
@@ -50,6 +67,7 @@ export function createHttpClient(options: CreateHttpClientOptions = {}): HttpCli
   async function request<T>(
     path: string,
     requestOptions: RequestOptions = {},
+    isRetry = false,
   ): Promise<ApiResponse<T>> {
     const { body, headers, ...rest } = requestOptions
 
@@ -71,6 +89,13 @@ export function createHttpClient(options: CreateHttpClientOptions = {}): HttpCli
     const data = isJson ? await res.json().catch(() => null) : await res.text()
 
     if (res.status === 401) {
+      if (!isRetry) {
+        const refreshed = await refreshAccessToken()
+        if (refreshed) {
+          return request<T>(path, requestOptions, true)
+        }
+      }
+
       const error = new ApiError(res.statusText || 'Unauthorized', 401, data)
       onUnauthorized?.(error)
       throw error
