@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   FiAward,
   FiBarChart2,
+  FiChevronDown,
   FiChevronLeft,
   FiChevronRight,
   FiEdit3,
@@ -25,6 +26,8 @@ const COMPOSER_TABS = [
   { key: 'praise', label: 'Praise', icon: <FiAward size={15} /> },
 ]
 
+const CLOCK_IN_MODES = ['Web', 'Work From Home', 'Field Visit']
+
 function useClock() {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
@@ -39,6 +42,8 @@ export default function Home() {
   const now = useClock()
   const [orgTab, setOrgTab] = useState('organization')
   const [composerTab, setComposerTab] = useState('post')
+  const [clockInMode, setClockInMode] = useState(CLOCK_IN_MODES[0])
+  const [clockInMenuOpen, setClockInMenuOpen] = useState(false)
 
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
 
@@ -63,7 +68,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="rounded-xl bg-amber-500 p-5 text-white">
+          <div className="rounded-xl bg-accent p-5 text-accent-fg">
             <div className="flex items-center justify-between text-sm font-medium">
               <span>
                 Time Today ·{' '}
@@ -90,13 +95,46 @@ export default function Home() {
                   hour12: true,
                 })}
               </span>
-              <div className="flex shrink-0 gap-2">
-                <Button size="sm" variant="secondary" className="!bg-white !text-amber-700">
+              <div className="flex shrink-0 items-center gap-2">
+                <Button size="sm" variant="secondary" className="!bg-surface !text-accent">
                   Web Clock-In
                 </Button>
-                <Button size="sm" variant="outline" className="!border-white/40 !text-white">
-                  Other
-                </Button>
+                <div className="relative">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    rightIcon={<FiChevronDown size={14} />}
+                    className="!border-accent-fg/40 !text-accent-fg hover:!bg-accent-fg/10"
+                    onClick={() => setClockInMenuOpen((v) => !v)}
+                  >
+                    {clockInMode}
+                  </Button>
+                  {clockInMenuOpen && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Close menu"
+                        onClick={() => setClockInMenuOpen(false)}
+                        className="fixed inset-0 z-10 cursor-default"
+                      />
+                      <div className="absolute right-0 z-20 mt-1 w-32 overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
+                        {CLOCK_IN_MODES.map((mode) => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => {
+                              setClockInMode(mode)
+                              setClockInMenuOpen(false)
+                            }}
+                            className="flex w-full items-center px-3 py-2 text-left text-sm text-heading hover:bg-surface-2"
+                          >
+                            {mode}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
