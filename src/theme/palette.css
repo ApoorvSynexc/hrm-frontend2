@@ -1,0 +1,147 @@
+/* ============================================================
+ * HRM color palettes
+ * ------------------------------------------------------------
+ * All theme colors live here. To add a NEW palette (e.g. "teal")
+ * without touching the rest of the app:
+ *
+ *   1. Add a new block below:
+ *        :root[data-palette="teal"] { --accent: ...; ... }
+ *        :root[data-palette="teal"][data-theme="dark"] { ... }
+ *   2. Extend ThemeProvider with a `palette` field and set
+ *      `data-palette` on <html> alongside `data-theme`.
+ *
+ * The default (no data-palette attribute) is the "indigo" palette.
+ * ============================================================ */
+
+/* ----- Indigo (default) — light ----- */
+:root {
+  --text: #4b5563;
+  --text-h: #0f172a;
+  --bg: #ffffff;
+  --bg-elevated: #f8fafc;
+  --border: #e2e8f0;
+  --code-bg: #f1f5f9;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-fg: #ffffff;
+  --accent-bg: rgba(79, 70, 229, 0.1);
+  --accent-border: rgba(79, 70, 229, 0.5);
+  --social-bg: rgba(241, 245, 249, 0.6);
+  --shadow:
+    rgba(15, 23, 42, 0.1) 0 10px 15px -3px,
+    rgba(15, 23, 42, 0.05) 0 4px 6px -2px;
+}
+
+/* ----- Indigo — dark (via OS preference, only when no explicit theme) ----- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --text: #94a3b8;
+    --text-h: #f1f5f9;
+    --bg: #0f172a;
+    --bg-elevated: #1e293b;
+    --border: #334155;
+    --code-bg: #1e293b;
+    --accent: #818cf8;
+    --accent-hover: #a5b4fc;
+    --accent-fg: #0f172a;
+    --accent-bg: rgba(129, 140, 248, 0.15);
+    --accent-border: rgba(129, 140, 248, 0.5);
+    --social-bg: rgba(30, 41, 59, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.5) 0 10px 15px -3px, rgba(0, 0, 0, 0.3) 0 4px 6px -2px;
+    color-scheme: dark;
+  }
+
+  :root:not([data-theme="light"]) #social .button-icon {
+    filter: invert(1) brightness(2);
+  }
+}
+
+/* ----- Indigo — dark (explicit, wins over OS) ----- */
+:root[data-theme="dark"] {
+  --text: #94a3b8;
+  --text-h: #f1f5f9;
+  --bg: #0f172a;
+  --bg-elevated: #1e293b;
+  --border: #334155;
+  --code-bg: #1e293b;
+  --accent: #818cf8;
+  --accent-hover: #a5b4fc;
+  --accent-fg: #0f172a;
+  --accent-bg: rgba(129, 140, 248, 0.15);
+  --accent-border: rgba(129, 140, 248, 0.5);
+  --social-bg: rgba(30, 41, 59, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.5) 0 10px 15px -3px, rgba(0, 0, 0, 0.3) 0 4px 6px -2px;
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] #social .button-icon {
+  filter: invert(1) brightness(2);
+}
+
+/* ----- Indigo — light (explicit, forces light-scheme metadata) ----- */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* ============================================================
+ * Olive (#867E32) — light
+ * ============================================================ */
+:root[data-palette="olive"] {
+  --text: #565244;
+  --text-h: #1c1b12;
+  --bg: #ffffff;
+  --bg-elevated: #faf9f2;
+  --border: #e5e3d5;
+  --code-bg: #f5f3e8;
+  --accent: #867e32;
+  --accent-hover: #6b6528;
+  --accent-fg: #ffffff;
+  --accent-bg: rgba(134, 126, 50, 0.1);
+  --accent-border: rgba(134, 126, 50, 0.5);
+  --social-bg: rgba(245, 243, 232, 0.6);
+  --shadow:
+    rgba(28, 27, 18, 0.1) 0 10px 15px -3px,
+    rgba(28, 27, 18, 0.05) 0 4px 6px -2px;
+}
+
+/* Olive — dark (via OS preference, only when no explicit theme) */
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="olive"]:not([data-theme="light"]) {
+    --text: #a8a48a;
+    --text-h: #f5f3e8;
+    --bg: #1a1a14;
+    --bg-elevated: #26251c;
+    --border: #3a3830;
+    --code-bg: #26251c;
+    --accent: #d4c869;
+    --accent-hover: #e0d580;
+    --accent-fg: #1a1a14;
+    --accent-bg: rgba(212, 200, 105, 0.15);
+    --accent-border: rgba(212, 200, 105, 0.5);
+    --social-bg: rgba(38, 37, 28, 0.5);
+    --shadow:
+      rgba(0, 0, 0, 0.5) 0 10px 15px -3px, rgba(0, 0, 0, 0.3) 0 4px 6px -2px;
+    color-scheme: dark;
+  }
+}
+
+/* Olive — dark (explicit, wins over OS) */
+:root[data-palette="olive"][data-theme="dark"] {
+  --text: #a8a48a;
+  --text-h: #f5f3e8;
+  --bg: #1a1a14;
+  --bg-elevated: #26251c;
+  --border: #3a3830;
+  --code-bg: #26251c;
+  --accent: #d4c869;
+  --accent-hover: #e0d580;
+  --accent-fg: #1a1a14;
+  --accent-bg: rgba(212, 200, 105, 0.15);
+  --accent-border: rgba(212, 200, 105, 0.5);
+  --social-bg: rgba(38, 37, 28, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.5) 0 10px 15px -3px, rgba(0, 0, 0, 0.3) 0 4px 6px -2px;
+  color-scheme: dark;
+}

@@ -1,0 +1,37 @@
+@import 'tailwindcss';
+@import './theme/palette.css';
+
+/* Expose palette CSS variables as Tailwind theme tokens so classes like
+   `bg-surface`, `text-heading`, `text-accent`, `border-border` work. */
+@theme inline {
+  --color-surface: var(--bg);
+  --color-surface-2: var(--bg-elevated);
+  --color-body: var(--text);
+  --color-heading: var(--text-h);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-border: var(--border);
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+}
+
+:root {
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+}
