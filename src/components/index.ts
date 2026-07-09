@@ -17,3 +17,6 @@ export { Table } from './Table'
 export type { TableProps, TableColumn, TableSize, TableAlign } from './Table'
 
 export { SplashScreen } from './SplashScreen'
+
+export { Tabs } from './Tabs'
+export type { TabsProps, TabItem, TabsVariant } from './Tabs'

@@ -31,18 +31,33 @@ export type ProfileImage = {
   thumbnailUrl: string | null
 }
 
+export type Department = {
+  id: string
+  name: string
+}
+
+export type Designation = {
+  id: string
+  name: string
+}
+
 export type Profile = {
   id: string
   tenantId: string
   email: string
   firstName: string
   lastName: string
+  dateOfBirth: string | null
+  gender: string | null
+  maritalStatus: string | null
   status: string
   employmentStatus: string
   employeeCode: string | null
+  joiningDate: string | null
+  hireDate: string | null
   role: Role | null
-  department: Record<string, unknown> | null
-  designation: Record<string, unknown> | null
+  department: Department | null
+  designation: Designation | null
   contact: Record<string, unknown> | null
   profile: ProfileImage | null
 }

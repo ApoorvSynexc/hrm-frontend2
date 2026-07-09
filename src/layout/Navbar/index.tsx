@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { FiBell, FiChevronDown, FiHelpCircle, FiSearch } from 'react-icons/fi'
 import { Avatar } from '../../components'
 import { PalettePicker, ThemeToggle } from '../../theme'
@@ -6,18 +7,25 @@ import { useSession } from '../../hooks'
 import { useAuth } from '../../services'
 import { UserMenu } from './UserMenu'
 
+const PAGE_TITLES: Record<string, string> = {
+  '/home': 'Dashboard',
+  '/profile': 'My Profile',
+}
+
 export function Navbar() {
   const { user } = useSession()
   const { logout } = useAuth()
+  const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : undefined
+  const pageTitle = PAGE_TITLES[pathname] ?? 'Dashboard'
 
   return (
     <header className="flex h-16 items-center gap-6 border-b border-border bg-surface px-6">
       <nav aria-label="Breadcrumb" className="hidden shrink-0 items-center gap-1.5 text-sm md:flex">
         <span className="text-body">Home</span>
         <span className="text-body">/</span>
-        <span className="font-medium text-heading">Dashboard</span>
+        <span className="font-medium text-heading">{pageTitle}</span>
       </nav>
 
       <div className="relative hidden max-w-md flex-1 md:block">

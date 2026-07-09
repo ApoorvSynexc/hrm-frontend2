@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   FiBell,
   FiBookOpen,
@@ -14,10 +15,12 @@ import type { Profile } from '../../services'
 type MenuItem = {
   label: string
   icon: ReactNode
+  /** Omit for items that don't have a page yet. */
+  to?: string
 }
 
 const ACCOUNT_ITEMS: MenuItem[] = [
-  { label: 'My Profile', icon: <FiUser size={16} /> },
+  { label: 'My Profile', icon: <FiUser size={16} />, to: '/profile' },
   { label: 'Notifications', icon: <FiBell size={16} /> },
   { label: 'Security', icon: <FiShield size={16} /> },
   { label: 'Configurations', icon: <FiSliders size={16} /> },
@@ -37,6 +40,13 @@ type UserMenuProps = {
 }
 
 export function UserMenu({ user, fullName, onClose, onSignOut, signingOut }: UserMenuProps) {
+  const navigate = useNavigate()
+
+  const handleItemClick = (item: MenuItem) => {
+    if (item.to) navigate(item.to)
+    onClose()
+  }
+
   return (
     <div className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
       <div className="flex items-center gap-3 bg-surface-2 p-4">
@@ -49,9 +59,9 @@ export function UserMenu({ user, fullName, onClose, onSignOut, signingOut }: Use
         </div>
       </div>
 
-      <MenuSection items={ACCOUNT_ITEMS} onItemClick={onClose} />
+      <MenuSection items={ACCOUNT_ITEMS} onItemClick={handleItemClick} />
       <div className="border-t border-border" />
-      <MenuSection items={RESOURCE_ITEMS} onItemClick={onClose} />
+      <MenuSection items={RESOURCE_ITEMS} onItemClick={handleItemClick} />
       <div className="border-t border-border" />
 
       <button
@@ -67,14 +77,20 @@ export function UserMenu({ user, fullName, onClose, onSignOut, signingOut }: Use
   )
 }
 
-function MenuSection({ items, onItemClick }: { items: MenuItem[]; onItemClick: () => void }) {
+function MenuSection({
+  items,
+  onItemClick,
+}: {
+  items: MenuItem[]
+  onItemClick: (item: MenuItem) => void
+}) {
   return (
     <div className="py-1">
       {items.map((item) => (
         <button
           key={item.label}
           type="button"
-          onClick={onItemClick}
+          onClick={() => onItemClick(item)}
           className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-heading transition-colors hover:bg-surface-2"
         >
           {item.icon}
