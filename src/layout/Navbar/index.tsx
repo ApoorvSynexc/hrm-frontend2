@@ -9,6 +9,7 @@ export function Navbar() {
   const { user } = useSession()
   const { logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : undefined
 
   return (
     <header className="flex h-16 items-center gap-6 border-b border-border bg-surface px-6">
@@ -56,9 +57,9 @@ export function Navbar() {
             onClick={() => setMenuOpen((v) => !v)}
             className="flex items-center gap-2 rounded-lg py-1.5 pr-2 pl-1.5 transition-colors hover:bg-surface-2"
           >
-            <Avatar name={user?.name} size="sm" />
+            <Avatar name={fullName} src={user?.profile?.url} size="sm" />
             <span className="hidden text-left sm:block">
-              <span className="block text-sm font-medium text-heading">{user?.name}</span>
+              <span className="block text-sm font-medium text-heading">{fullName}</span>
               <span className="block text-xs text-body">{user?.email}</span>
             </span>
             <FiChevronDown size={14} className="text-body" />

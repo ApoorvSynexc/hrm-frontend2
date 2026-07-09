@@ -14,12 +14,23 @@ export class ApiError extends Error {
 
 export type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown }
 
+/**
+ * Every backend endpoint responds with this envelope — never a bare payload.
+ * `meta` carries pagination info (page, pageSize, total, ...) on list endpoints.
+ */
+export type ApiResponse<T> = {
+  success: boolean
+  message: string
+  data: T
+  meta: Record<string, unknown>
+}
+
 export type HttpClient = {
-  get: <T>(path: string, options?: RequestOptions) => Promise<T>
-  post: <T>(path: string, body?: unknown, options?: RequestOptions) => Promise<T>
-  put: <T>(path: string, body?: unknown, options?: RequestOptions) => Promise<T>
-  patch: <T>(path: string, body?: unknown, options?: RequestOptions) => Promise<T>
-  delete: <T>(path: string, options?: RequestOptions) => Promise<T>
+  get: <T>(path: string, options?: RequestOptions) => Promise<ApiResponse<T>>
+  post: <T>(path: string, body?: unknown, options?: RequestOptions) => Promise<ApiResponse<T>>
+  put: <T>(path: string, body?: unknown, options?: RequestOptions) => Promise<ApiResponse<T>>
+  patch: <T>(path: string, body?: unknown, options?: RequestOptions) => Promise<ApiResponse<T>>
+  delete: <T>(path: string, options?: RequestOptions) => Promise<ApiResponse<T>>
 }
 
 type CreateHttpClientOptions = {
@@ -36,7 +47,10 @@ type CreateHttpClientOptions = {
 export function createHttpClient(options: CreateHttpClientOptions = {}): HttpClient {
   const { onUnauthorized } = options
 
-  async function request<T>(path: string, requestOptions: RequestOptions = {}): Promise<T> {
+  async function request<T>(
+    path: string,
+    requestOptions: RequestOptions = {},
+  ): Promise<ApiResponse<T>> {
     const { body, headers, ...rest } = requestOptions
 
     const res = await fetch(`${BASE_URL}${path}`, {
@@ -74,7 +88,7 @@ export function createHttpClient(options: CreateHttpClientOptions = {}): HttpCli
       )
     }
 
-    return data as T
+    return data as ApiResponse<T>
   }
 
   return {

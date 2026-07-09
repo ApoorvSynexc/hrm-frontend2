@@ -14,7 +14,10 @@ export function useAccount() {
 
   const myProfile = useQuery({
     queryKey: accountKeys.myProfile(),
-    queryFn: () => http.get<Profile>('/v1/account/my-profile'),
+    queryFn: async () => {
+      const res = await http.get<Profile>('/v1/account/my-profile')
+      return res.data
+    },
     retry: false,
   })
 
