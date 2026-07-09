@@ -1,0 +1,86 @@
+import type { ReactNode } from 'react'
+import {
+  FiBell,
+  FiBookOpen,
+  FiCalendar,
+  FiLogOut,
+  FiShield,
+  FiSliders,
+  FiUser,
+} from 'react-icons/fi'
+import { Avatar } from '../../components'
+import type { Profile } from '../../services'
+
+type MenuItem = {
+  label: string
+  icon: ReactNode
+}
+
+const ACCOUNT_ITEMS: MenuItem[] = [
+  { label: 'My Profile', icon: <FiUser size={16} /> },
+  { label: 'Notifications', icon: <FiBell size={16} /> },
+  { label: 'Security', icon: <FiShield size={16} /> },
+  { label: 'Configurations', icon: <FiSliders size={16} /> },
+]
+
+const RESOURCE_ITEMS: MenuItem[] = [
+  { label: 'HR Handbook', icon: <FiBookOpen size={16} /> },
+  { label: 'Holiday Calendar', icon: <FiCalendar size={16} /> },
+]
+
+type UserMenuProps = {
+  user: Profile | null
+  fullName?: string
+  onClose: () => void
+  onSignOut: () => void
+  signingOut: boolean
+}
+
+export function UserMenu({ user, fullName, onClose, onSignOut, signingOut }: UserMenuProps) {
+  return (
+    <div className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+      <div className="flex items-center gap-3 bg-surface-2 p-4">
+        <Avatar name={fullName} src={user?.profile?.url} size="md" />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-heading">{fullName}</p>
+          {user?.role && (
+            <p className="text-xs font-medium tracking-wide text-body">{user.role.name}</p>
+          )}
+        </div>
+      </div>
+
+      <MenuSection items={ACCOUNT_ITEMS} onItemClick={onClose} />
+      <div className="border-t border-border" />
+      <MenuSection items={RESOURCE_ITEMS} onItemClick={onClose} />
+      <div className="border-t border-border" />
+
+      <button
+        type="button"
+        onClick={onSignOut}
+        disabled={signingOut}
+        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-surface-2 disabled:opacity-60"
+      >
+        <FiLogOut size={16} />
+        {signingOut ? 'Signing out…' : 'Sign out'}
+      </button>
+    </div>
+  )
+}
+
+function MenuSection({ items, onItemClick }: { items: MenuItem[]; onItemClick: () => void }) {
+  return (
+    <div className="py-1">
+      {items.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          onClick={onItemClick}
+          className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-heading transition-colors hover:bg-surface-2"
+        >
+          {item.icon}
+          {item.label}
+        </button>
+      ))}
+    </div>
+  )
+}

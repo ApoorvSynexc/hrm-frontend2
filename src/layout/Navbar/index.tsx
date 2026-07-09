@@ -4,6 +4,7 @@ import { Avatar } from '../../components'
 import { PalettePicker, ThemeToggle } from '../../theme'
 import { useSession } from '../../hooks'
 import { useAuth } from '../../services'
+import { UserMenu } from './UserMenu'
 
 export function Navbar() {
   const { user } = useSession()
@@ -73,15 +74,13 @@ export function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 className="fixed inset-0 z-10 cursor-default"
               />
-              <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
-                <button
-                  type="button"
-                  onClick={() => logout.mutate()}
-                  className="block w-full px-3 py-2 text-left text-sm text-heading hover:bg-surface-2"
-                >
-                  Sign out
-                </button>
-              </div>
+              <UserMenu
+                user={user}
+                fullName={fullName}
+                onClose={() => setMenuOpen(false)}
+                onSignOut={() => logout.mutate()}
+                signingOut={logout.isPending}
+              />
             </>
           )}
         </div>
