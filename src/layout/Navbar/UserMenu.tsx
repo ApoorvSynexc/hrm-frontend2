@@ -23,7 +23,7 @@ const ACCOUNT_ITEMS: MenuItem[] = [
   { label: 'My Profile', icon: <FiUser size={16} />, to: '/profile' },
   { label: 'Notifications', icon: <FiBell size={16} /> },
   { label: 'Security', icon: <FiShield size={16} /> },
-  { label: 'Configurations', icon: <FiSliders size={16} /> },
+  { label: 'Configurations', icon: <FiSliders size={16} />, to: '/configuration' },
 ]
 
 const RESOURCE_ITEMS: MenuItem[] = [
