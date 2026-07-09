@@ -15,3 +15,5 @@ export type { PaginationProps, PaginationSize } from './Pagination'
 
 export { Table } from './Table'
 export type { TableProps, TableColumn, TableSize, TableAlign } from './Table'
+
+export { SplashScreen } from './SplashScreen'
