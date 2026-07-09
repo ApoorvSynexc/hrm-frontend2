@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
 import { Typography } from '../../components'
+
+export { Card } from '../../components'
 
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '—'
@@ -8,17 +9,6 @@ export function formatDate(value: string | null | undefined): string {
     month: 'short',
     year: 'numeric',
   })
-}
-
-export function Card({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="rounded-xl border border-border bg-surface p-5">
-      <Typography variant="h6" className="mb-3">
-        {title}
-      </Typography>
-      {children}
-    </div>
-  )
 }
 
 export function Field({ label, value }: { label: string; value?: string | null }) {

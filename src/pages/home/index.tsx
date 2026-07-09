@@ -1,15 +1,218 @@
-import { Typography } from '../../components'
+import { useEffect, useState } from 'react'
+import {
+  FiAward,
+  FiBarChart2,
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit3,
+  FiMessageSquare,
+  FiMoreVertical,
+  FiPlus,
+  FiSettings,
+  FiThumbsUp,
+} from 'react-icons/fi'
+import { Button, Card, Tabs, Typography } from '../../components'
 import { useSession } from '../../hooks'
+
+const ORG_TABS = [
+  { key: 'organization', label: 'Organization' },
+  { key: 'team', label: 'My Team' },
+]
+
+const COMPOSER_TABS = [
+  { key: 'post', label: 'Post', icon: <FiEdit3 size={15} /> },
+  { key: 'poll', label: 'Poll', icon: <FiBarChart2 size={15} /> },
+  { key: 'praise', label: 'Praise', icon: <FiAward size={15} /> },
+]
+
+function useClock() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return now
+}
 
 export default function Home() {
   const { user } = useSession()
+  const now = useClock()
+  const [orgTab, setOrgTab] = useState('organization')
+  const [composerTab, setComposerTab] = useState('post')
+
+  const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2 py-24 text-center">
-      <Typography variant="h2">Welcome back{user ? `, ${user.firstName}` : ''}</Typography>
-      <Typography variant="body" color="body">
-        You&apos;re signed in. This is where the HRM dashboard will live.
-      </Typography>
+    <div className="flex flex-col gap-5">
+      <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 px-8 py-10">
+        <Typography variant="h2" className="!text-white">
+          Welcome back{fullName ? `, ${fullName}` : ''}!
+        </Typography>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <Typography variant="h5">Quick Access</Typography>
+            <button
+              type="button"
+              aria-label="Configure quick access"
+              className="rounded-lg p-1.5 text-body transition-colors hover:bg-surface-2 hover:text-heading"
+            >
+              <FiSettings size={16} />
+            </button>
+          </div>
+
+          <div className="rounded-xl bg-amber-500 p-5 text-white">
+            <div className="flex items-center justify-between text-sm font-medium">
+              <span>
+                Time Today ·{' '}
+                {now.toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </span>
+              <button type="button" className="text-xs font-semibold hover:underline">
+                View All
+              </button>
+            </div>
+            <p className="mt-4 text-[11px] font-medium tracking-wide uppercase opacity-80">
+              Current Time
+            </p>
+            <div className="mt-1 flex items-end justify-between gap-3">
+              <span className="text-3xl font-bold tabular-nums">
+                {now.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true,
+                })}
+              </span>
+              <div className="flex shrink-0 gap-2">
+                <Button size="sm" variant="secondary" className="!bg-white !text-amber-700">
+                  Web Clock-In
+                </Button>
+                <Button size="sm" variant="outline" className="!border-white/40 !text-white">
+                  Other
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <Card
+            title="Holidays"
+            action={
+              <button type="button" className="text-xs font-medium text-accent hover:underline">
+                View All
+              </button>
+            }
+          >
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                aria-label="Previous holiday"
+                className="rounded-full p-1.5 text-body hover:bg-surface-2 hover:text-heading"
+              >
+                <FiChevronLeft size={16} />
+              </button>
+              <div className="text-center">
+                <p className="text-lg font-semibold text-accent">Labor Day</p>
+                <p className="mt-0.5 text-xs text-body">Mon, 01 September, 2025</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Next holiday"
+                className="rounded-full p-1.5 text-body hover:bg-surface-2 hover:text-heading"
+              >
+                <FiChevronRight size={16} />
+              </button>
+            </div>
+          </Card>
+
+          <Card title="On Leave Today">
+            <p className="text-sm text-body">No one is on leave today.</p>
+          </Card>
+
+          <Card title="Working Remotely">
+            <p className="text-sm text-body">
+              Everyone is at office! No one is working remotely today.
+            </p>
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <Tabs
+            items={ORG_TABS}
+            active={orgTab}
+            onChange={setOrgTab}
+            variant="pill"
+            className="w-fit"
+          />
+
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <Tabs
+              items={COMPOSER_TABS}
+              active={composerTab}
+              onChange={setComposerTab}
+              className="mb-3"
+            />
+            <textarea
+              rows={3}
+              placeholder="Write your post here and mention your peers"
+              className="w-full resize-none rounded-lg border-none bg-transparent text-sm text-heading outline-none placeholder:text-body/60"
+            />
+          </div>
+
+          <Card
+            title="Announcements"
+            action={
+              <div className="flex items-center gap-2">
+                <button type="button" className="text-xs font-medium text-accent hover:underline">
+                  View more
+                </button>
+                <button
+                  type="button"
+                  aria-label="Add announcement"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-accent-fg"
+                >
+                  <FiPlus size={14} />
+                </button>
+              </div>
+            }
+          >
+            <div className="flex gap-4">
+              <div className="hidden h-24 w-24 shrink-0 rounded-lg bg-surface-2 sm:block" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-heading">Team Offsite — Sept 20th</p>
+                <p className="mt-1 text-sm text-body">
+                  Join us for a day of team-building activities and games. Lunch and transport
+                  will be provided for all attendees.
+                </p>
+                <button type="button" className="mt-1 text-sm text-accent hover:underline">
+                  view more
+                </button>
+                <div className="mt-3 flex items-center gap-4 text-body">
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <FiThumbsUp size={14} /> 0
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <FiMessageSquare size={14} /> 0
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="More options"
+                    className="ml-auto hover:text-heading"
+                  >
+                    <FiMoreVertical size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

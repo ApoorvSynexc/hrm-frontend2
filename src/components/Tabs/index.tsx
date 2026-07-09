@@ -1,6 +1,9 @@
+import type { ReactNode } from 'react'
+
 export type TabItem = {
   key: string
   label: string
+  icon?: ReactNode
 }
 
 export type TabsVariant = 'underline' | 'pill'
@@ -23,12 +26,13 @@ export function Tabs({ items, active, onChange, variant = 'underline', className
             type="button"
             onClick={() => onChange(item.key)}
             aria-current={item.key === active ? 'page' : undefined}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               item.key === active
                 ? 'bg-surface text-heading shadow-sm'
                 : 'text-body hover:text-heading'
             }`}
           >
+            {item.icon}
             {item.label}
           </button>
         ))}
@@ -44,12 +48,13 @@ export function Tabs({ items, active, onChange, variant = 'underline', className
           type="button"
           onClick={() => onChange(item.key)}
           aria-current={item.key === active ? 'page' : undefined}
-          className={`border-b-2 px-0.5 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
+          className={`inline-flex items-center gap-1.5 border-b-2 px-0.5 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
             item.key === active
               ? 'border-accent text-accent'
               : 'border-transparent text-body hover:text-heading'
           }`}
         >
+          {item.icon}
           {item.label}
         </button>
       ))}

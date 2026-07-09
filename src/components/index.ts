@@ -20,3 +20,6 @@ export { SplashScreen } from './SplashScreen'
 
 export { Tabs } from './Tabs'
 export type { TabsProps, TabItem, TabsVariant } from './Tabs'
+
+export { Card } from './Card'
+export type { CardProps } from './Card'
