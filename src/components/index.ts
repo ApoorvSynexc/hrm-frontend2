@@ -29,3 +29,6 @@ export type { ModalProps } from './Modal'
 
 export { ConfirmDialog } from './ConfirmDialog'
 export type { ConfirmDialogProps } from './ConfirmDialog'
+
+export { Dropdown } from './Dropdown'
+export type { DropdownProps, DropdownOption, DropdownSize } from './Dropdown'

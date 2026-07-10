@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
-import { Button, TextField, Typography } from '../../../components'
+import { Button, Dropdown, TextField, Typography } from '../../../components'
 import { getErrorMessage } from '../../../lib'
 import { useRole, useRolePermission } from '../../../services'
 import { ModuleHeader } from '../common'
@@ -159,22 +159,13 @@ export default function RolePermissionModule() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="w-full max-w-xs">
-          <label htmlFor="role-permission-role" className="mb-1.5 block text-sm font-medium text-heading">
-            Role
-          </label>
-          <select
-            id="role-permission-role"
+          <Dropdown
+            label="Role"
+            placeholder="Select a role…"
             value={roleId}
-            onChange={(e) => setRoleId(e.target.value)}
-            className="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-heading outline-none transition-colors focus:border-accent"
-          >
-            <option value="">Select a role…</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
+            onChange={setRoleId}
+            options={roles.map((role) => ({ label: role.name, value: role.id }))}
+          />
         </div>
 
         {roleId && (
