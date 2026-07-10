@@ -8,7 +8,6 @@ import {
   FiGitBranch,
   FiGrid,
   FiKey,
-  FiSettings,
   FiShield,
   FiSun,
 } from 'react-icons/fi'
@@ -18,7 +17,6 @@ import RolePermission from './role-permission'
 import Department from './department'
 import Designation from './designation'
 import LeaveType from './leave-type'
-import LeaveConfiguration from './leave-configuration'
 import AttendancePolicy from './attendance-policy'
 import WorkSchedulePolicy from './work-schedule-policy'
 import RequestPolicy from './request-policy'
@@ -57,7 +55,6 @@ const MODULE_GROUPS: ModuleGroup[] = [
     label: 'Leave & Attendance',
     items: [
       { key: 'leave-type', label: 'Leave Type', icon: FiCalendar },
-      { key: 'leave-configuration', label: 'Leave Configuration', icon: FiSettings },
       { key: 'attendance-policy', label: 'Attendance Policy', icon: FiClock },
       { key: 'work-schedule-policy', label: 'Work Schedule Policy', icon: FiClipboard },
       { key: 'holiday-configuration', label: 'Holiday Configuration', icon: FiSun },
@@ -78,7 +75,6 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   department: Department,
   designation: Designation,
   'leave-type': LeaveType,
-  'leave-configuration': LeaveConfiguration,
   'attendance-policy': AttendancePolicy,
   'work-schedule-policy': WorkSchedulePolicy,
   'request-policy': RequestPolicy,
