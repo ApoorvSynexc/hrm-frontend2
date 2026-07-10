@@ -12,6 +12,7 @@ export type {
   AttendancePolicy,
   AttendancePolicyType,
   AttendancePolicyStatus,
+  IpRange,
   CreateAttendancePolicyInput,
   UpdateAttendancePolicyInput,
   AttendancePolicyListMeta,

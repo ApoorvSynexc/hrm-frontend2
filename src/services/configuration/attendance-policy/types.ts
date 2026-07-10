@@ -6,7 +6,7 @@ export type AttendancePolicy = {
   description: string | null
   isDefault: boolean
   policyType: AttendancePolicyType
-  ipRanges: unknown
+  ipRanges: IpRange[] | null
   radiusMeters: number
   wifiSsids: string[]
   status: AttendancePolicyStatus
@@ -14,6 +14,12 @@ export type AttendancePolicy = {
   updatedAt: string
   deletedAt: string | null
   createdBy: string | null
+}
+
+/** Backend Prisma `ipRanges Json?` — Array: [{start: "192.168.1.0", end: "192.168.1.255"}]. */
+export type IpRange = {
+  start: string
+  end: string
 }
 
 /** Backend joi: policyType must be STRICT | FLEXIBLE. */
@@ -29,6 +35,7 @@ export type CreateAttendancePolicyInput = {
   policyType: AttendancePolicyType
   radiusMeters?: number
   wifiSsids?: string[]
+  ipRanges?: IpRange[]
 }
 
 /** PUT /v1/config/attendance-policy — id required, everything else optional. */
@@ -39,6 +46,7 @@ export type UpdateAttendancePolicyInput = {
   policyType?: AttendancePolicyType
   radiusMeters?: number
   wifiSsids?: string[]
+  ipRanges?: IpRange[]
   status?: AttendancePolicyStatus
 }
 

@@ -28,6 +28,8 @@ export default function ManageAttendancePolicyModal({
   const { createAttendancePolicy, updateAttendancePolicy } = useAttendancePolicy()
   const mutation = isEdit ? updateAttendancePolicy : createAttendancePolicy
   const [ssidInput, setSsidInput] = useState('')
+  const [ipRangeStart, setIpRangeStart] = useState('')
+  const [ipRangeEnd, setIpRangeEnd] = useState('')
 
   const {
     register,
@@ -43,6 +45,7 @@ export default function ManageAttendancePolicyModal({
       policyType: 'FLEXIBLE',
       radiusMeters: '100',
       wifiSsids: [],
+      ipRanges: [],
     },
     resolver: joiResolver(attendancePolicySchema),
   })
@@ -58,8 +61,11 @@ export default function ManageAttendancePolicyModal({
         policyType: policy?.policyType ?? 'FLEXIBLE',
         radiusMeters: policy ? String(policy.radiusMeters) : '100',
         wifiSsids: policy?.wifiSsids ?? [],
+        ipRanges: policy?.ipRanges ?? [],
       })
       setSsidInput('')
+      setIpRangeStart('')
+      setIpRangeEnd('')
       mutation.reset()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,6 +79,7 @@ export default function ManageAttendancePolicyModal({
       policyType: values.policyType,
       radiusMeters: isStrictSubmit && values.radiusMeters ? Number(values.radiusMeters) : undefined,
       wifiSsids: isStrictSubmit && values.wifiSsids.length > 0 ? values.wifiSsids : undefined,
+      ipRanges: isStrictSubmit && values.ipRanges.length > 0 ? values.ipRanges : undefined,
     }
 
     if (isEdit && policy) {
@@ -176,7 +183,6 @@ export default function ManageAttendancePolicyModal({
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-heading">
                       Office WiFi SSIDs
-                      <span className="text-red-500"> *</span>
                     </label>
                     <div className="flex gap-2">
                       <TextField
@@ -221,6 +227,74 @@ export default function ManageAttendancePolicyModal({
                     )}
                     {errors.wifiSsids && (
                       <p className="mt-1 text-xs text-red-500">{errors.wifiSsids.message}</p>
+                    )}
+                  </div>
+                )
+              }}
+            />
+
+            <Controller
+              name="ipRanges"
+              control={control}
+              render={({ field }) => {
+                const addIpRange = () => {
+                  const start = ipRangeStart.trim()
+                  const end = ipRangeEnd.trim()
+                  if (!start || !end) return
+                  field.onChange([...field.value, { start, end }])
+                  setIpRangeStart('')
+                  setIpRangeEnd('')
+                }
+                const removeIpRange = (index: number) => {
+                  field.onChange(field.value.filter((_, i) => i !== index))
+                }
+
+                return (
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-heading">
+                      Allowed IP Ranges
+                    </label>
+                    <div className="flex gap-2">
+                      <TextField
+                        value={ipRangeStart}
+                        onChange={(e) => setIpRangeStart(e.target.value)}
+                        placeholder="Start IP, e.g. 192.168.1.0"
+                      />
+                      <TextField
+                        value={ipRangeEnd}
+                        onChange={(e) => setIpRangeEnd(e.target.value)}
+                        placeholder="End IP, e.g. 192.168.1.255"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addIpRange}
+                        leftIcon={<FiPlus size={16} />}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                    {field.value.length > 0 && (
+                      <div className="mt-2 flex flex-col gap-1.5">
+                        {field.value.map((range, index) => (
+                          <div
+                            key={`${range.start}-${range.end}`}
+                            className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-1.5 text-sm text-heading"
+                          >
+                            <span>
+                              {range.start} – {range.end}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={`Remove IP range ${range.start} to ${range.end}`}
+                              onClick={() => removeIpRange(index)}
+                              className="text-body transition-colors hover:text-red-500"
+                            >
+                              <FiX size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 )

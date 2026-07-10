@@ -35,9 +35,9 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative z-10 w-full max-w-md rounded-xl border border-border bg-surface shadow-lg"
+        className="relative z-10 flex max-h-[90vh] w-full max-w-md flex-col rounded-xl border border-border bg-surface shadow-lg"
       >
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <Typography variant="h6">{title}</Typography>
           <button
             type="button"
@@ -49,10 +49,12 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
           </button>
         </div>
 
-        <div className="px-5 py-4">{children}</div>
+        <div className="overflow-y-auto px-5 py-4">{children}</div>
 
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-border px-5 py-4">{footer}</div>
+          <div className="flex shrink-0 justify-end gap-2 border-t border-border px-5 py-4">
+            {footer}
+          </div>
         )}
       </div>
     </div>

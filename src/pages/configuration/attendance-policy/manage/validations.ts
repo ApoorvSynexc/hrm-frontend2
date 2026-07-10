@@ -1,18 +1,24 @@
 import Joi from 'joi'
 
+export type IpRangeFormValue = {
+  start: string
+  end: string
+}
+
 export type AttendancePolicyFormValues = {
   name: string
   description: string
   policyType: 'STRICT' | 'FLEXIBLE'
   radiusMeters: string
   wifiSsids: string[]
+  ipRanges: IpRangeFormValue[]
 }
 
 /**
  * Mirrors backend middlewares/joi/config/attendance-policy for name/policyType/radiusMeters
- * shape (name required ≤100, policyType required, radiusMeters integer ≥0). radiusMeters and
- * wifiSsids being required-when-STRICT is a frontend-only UX rule — the backend itself treats
- * both as always-optional regardless of policyType.
+ * shape (name required ≤100, policyType required, radiusMeters integer ≥0). radiusMeters being
+ * required-when-STRICT is a frontend-only UX rule; wifiSsids and ipRanges are always optional,
+ * matching the backend which treats all three as optional regardless of policyType.
  */
 export const attendancePolicySchema = Joi.object<AttendancePolicyFormValues>({
   name: Joi.string().max(100).required().messages({
@@ -37,13 +43,13 @@ export const attendancePolicySchema = Joi.object<AttendancePolicyFormValues>({
         'string.pattern.base': 'Radius must be a whole number',
       }),
     }),
-  wifiSsids: Joi.array()
-    .items(Joi.string())
-    .when('policyType', {
-      is: 'STRICT',
-      then: Joi.array().min(1).required().messages({
-        'array.min': 'Add at least one WiFi SSID for strict policies',
+  wifiSsids: Joi.array().items(Joi.string()).optional(),
+  ipRanges: Joi.array()
+    .items(
+      Joi.object({
+        start: Joi.string().required(),
+        end: Joi.string().required(),
       }),
-      otherwise: Joi.array().optional(),
-    }),
+    )
+    .optional(),
 })
