@@ -32,3 +32,6 @@ export type { ConfirmDialogProps } from './ConfirmDialog'
 
 export { Dropdown } from './Dropdown'
 export type { DropdownProps, DropdownOption, DropdownSize } from './Dropdown'
+
+export { ToggleButton } from './ToggleButton'
+export type { ToggleButtonProps, ToggleButtonSize } from './ToggleButton'

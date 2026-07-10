@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi'
-import { Button, ConfirmDialog, Table, type TableColumn } from '../../../components'
+import { Button, ConfirmDialog, Table, ToggleButton, type TableColumn } from '../../../components'
 import { useRole, type Role } from '../../../services'
 import { ModuleHeader } from '../common'
 import ManageRoleModal from './manage'
@@ -12,8 +12,17 @@ export default function RoleModule() {
   const [manageOpen, setManageOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<Role | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
-  const { getRoles, deleteRole } = useRole({ listParams: { page, limit: PAGE_SIZE } })
+  const { getRoles, deleteRole, updateRole } = useRole({ listParams: { page, limit: PAGE_SIZE } })
+
+  const toggleStatus = (role: Role) => {
+    setTogglingId(role.id)
+    updateRole.mutate(
+      { id: role.id, status: role.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' },
+      { onSettled: () => setTogglingId(null) },
+    )
+  }
 
   const openCreate = () => {
     setEditingRole(null)
@@ -42,13 +51,13 @@ export default function RoleModule() {
       header: 'Status',
       width: '110px',
       render: (row) => (
-        <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-            row.status === 'ACTIVE' ? 'bg-accent-bg text-accent' : 'bg-surface-2 text-body'
-          }`}
-        >
-          {row.status}
-        </span>
+        <ToggleButton
+          size="sm"
+          checked={row.status === 'ACTIVE'}
+          loading={togglingId === row.id}
+          onChange={() => toggleStatus(row)}
+          label={`Toggle status for ${row.name}`}
+        />
       ),
     },
     {
