@@ -40,6 +40,12 @@ export default function RoleModule() {
   }
 
   const columns: TableColumn<Role>[] = [
+    {
+      key: 'serial',
+      header: '#',
+      width: '56px',
+      render: (_row, index) => (page - 1) * PAGE_SIZE + index + 1,
+    },
     { key: 'name', header: 'Role' },
     {
       key: 'description',
