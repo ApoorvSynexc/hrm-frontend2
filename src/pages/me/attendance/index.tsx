@@ -4,6 +4,7 @@ import { Button, Card, ComingSoon, Tabs, Typography } from '../../../components'
 import { getErrorMessage } from '../../../lib'
 import { useAttendance, type Attendance as AttendanceRecord } from '../../../services'
 import { AttendanceLogList } from './AttendanceLogList'
+import Calendar from './Calendar'
 import { DAILY_TARGET_MINUTES, DURATION_GRADIENT, formatMinutes, formatTime, startOfWeek, toISODate } from './helpers'
 
 const PAGE_SIZE = 10
@@ -198,6 +199,8 @@ export default function Attendance() {
             pageSize={PAGE_SIZE}
             totalItems={getAttendanceList.data?.meta.totalRecords ?? 0}
           />
+        ) : logTab === 'calendar' ? (
+          <Calendar />
         ) : (
           <ComingSoon label={LOG_TABS.find((t) => t.key === logTab)?.label ?? 'This'} />
         )}

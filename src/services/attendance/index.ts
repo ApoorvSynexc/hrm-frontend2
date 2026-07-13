@@ -6,6 +6,7 @@ import type {
   AttendanceListParams,
   CheckInInput,
   CheckOutInput,
+  MonthlyAttendance,
   TodayAttendance,
 } from './types'
 
@@ -18,19 +19,24 @@ export type {
   CheckOutInput,
   AttendanceListMeta,
   AttendanceListParams,
+  MonthlyAttendance,
+  MonthlyCalendarDay,
+  MonthlySummary,
 } from './types'
 
 export const attendanceKeys = {
   all: ['attendance'] as const,
   today: () => [...attendanceKeys.all, 'today'] as const,
   list: (params: AttendanceListParams) => [...attendanceKeys.all, 'list', params] as const,
+  monthly: (year: number, month: number) => [...attendanceKeys.all, 'monthly', year, month] as const,
 }
 
 type UseAttendanceOptions = {
   listParams?: AttendanceListParams
+  monthlyParams?: { year: number; month: number }
 }
 
-export function useAttendance({ listParams }: UseAttendanceOptions = {}) {
+export function useAttendance({ listParams, monthlyParams }: UseAttendanceOptions = {}) {
   const http = useHttpClient()
   const queryClient = useQueryClient()
   const invalidate = () => queryClient.invalidateQueries({ queryKey: attendanceKeys.all })
@@ -65,6 +71,16 @@ export function useAttendance({ listParams }: UseAttendanceOptions = {}) {
     enabled: Boolean(listParams),
   })
 
+  const getMonthly = useQuery({
+    queryKey: attendanceKeys.monthly(monthlyParams?.year ?? 0, monthlyParams?.month ?? 0),
+    queryFn: async () => {
+      const { year, month } = monthlyParams as { year: number; month: number }
+      const res = await http.get<MonthlyAttendance>(`/v1/attendance/monthly?year=${year}&month=${month}`)
+      return res.data
+    },
+    enabled: Boolean(monthlyParams),
+  })
+
   const checkIn = useMutation({
     mutationFn: async (input: CheckInInput) => {
       const res = await http.post<Attendance>('/v1/attendance/checkin', input)
@@ -84,6 +100,7 @@ export function useAttendance({ listParams }: UseAttendanceOptions = {}) {
   return {
     getToday,
     getAttendanceList,
+    getMonthly,
     checkIn,
     checkOut,
   }

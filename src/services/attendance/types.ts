@@ -71,6 +71,38 @@ export type CheckOutInput = {
   checkOutMethod?: string
 }
 
+export type MonthlyCalendarDay = {
+  date: string
+  status: AttendanceStatus
+  totalMinutes: number | null
+  isFinalStatus: boolean
+  isLate: boolean
+}
+
+/**
+ * GET /v1/attendance/monthly — `onLeaveDays` is always 0 due to a backend
+ * bug: it filters attendances by `status === 'ON_LEAVE'`, but the real
+ * AttendanceStatus enum value is `LEAVE`. Kept here as-is (not worked
+ * around) since it reflects the real API response.
+ */
+export type MonthlySummary = {
+  year: number
+  month: number
+  totalDays: number
+  presentDays: number
+  halfDays: number
+  absentDays: number
+  onLeaveDays: number
+  holidayDays: number
+  weekOffDays: number
+  lateDays: number
+}
+
+export type MonthlyAttendance = {
+  calendar: MonthlyCalendarDay[]
+  summary: MonthlySummary
+}
+
 export type AttendanceListMeta = {
   page: number
   limit: number
