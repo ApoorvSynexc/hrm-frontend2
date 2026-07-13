@@ -20,7 +20,7 @@ type NavItem = {
 
 const MAIN_NAV: NavItem[] = [
   { label: 'Home', icon: FiHome, to: '/home' },
-  { label: 'Me', icon: FiUser },
+  { label: 'Me', icon: FiUser, to: '/me' },
   { label: 'My Team', icon: FiUsers },
   { label: 'Organization', icon: FiBriefcase, to: '/organization' },
 ]

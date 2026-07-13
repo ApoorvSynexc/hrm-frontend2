@@ -1,4 +1,6 @@
 export * from './account'
+export * from './attendance'
 export * from './auth'
 export * from './configuration'
 export * from './employee'
+export * from './regularization'
