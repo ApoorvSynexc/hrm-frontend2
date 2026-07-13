@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react'
 import { FiX } from 'react-icons/fi'
 import { Typography } from '../Typography'
 
+export type ModalSize = 'md' | 'lg' | 'xl'
+
 export type ModalProps = {
   open: boolean
   onClose: () => void
@@ -9,9 +11,17 @@ export type ModalProps = {
   children: ReactNode
   /** Rendered right-aligned below the body — usually action buttons. */
   footer?: ReactNode
+  /** Controls max-width. Defaults to 'md' (max-w-md) for compact forms. */
+  size?: ModalSize
 }
 
-export function Modal({ open, onClose, title, children, footer }: ModalProps) {
+const SIZE_CLASS: Record<ModalSize, string> = {
+  md: 'max-w-md',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+}
+
+export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
@@ -35,7 +45,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative z-10 flex max-h-[90vh] w-full max-w-md flex-col rounded-xl border border-border bg-surface shadow-lg"
+        className={`relative z-10 flex max-h-[90vh] w-full flex-col rounded-xl border border-border bg-surface shadow-lg ${SIZE_CLASS[size]}`}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <Typography variant="h6">{title}</Typography>
