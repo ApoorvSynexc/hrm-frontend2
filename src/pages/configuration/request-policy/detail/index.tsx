@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { FiPlus, FiTrash2 } from 'react-icons/fi'
-import { Button, ConfirmDialog, Dropdown, Modal, TextField, ToggleButton, Typography } from '../../../../components'
+import { Button, ConfirmDialog, Dropdown, Modal, TextField, Typography } from '../../../../components'
 import { getErrorMessage } from '../../../../lib'
 import {
   useLeavePolicyRule,

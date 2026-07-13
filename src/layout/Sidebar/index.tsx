@@ -2,13 +2,10 @@ import { NavLink } from 'react-router-dom'
 import type { ComponentType } from 'react'
 import {
   FiBriefcase,
-  FiCalendar,
   FiChevronLeft,
   FiChevronRight,
-  FiClock,
-  FiCreditCard,
-  FiFileText,
   FiHome,
+  FiUser,
   FiUsers,
 } from 'react-icons/fi'
 
@@ -23,15 +20,9 @@ type NavItem = {
 
 const MAIN_NAV: NavItem[] = [
   { label: 'Home', icon: FiHome, to: '/home' },
-  { label: 'Attendance', icon: FiClock },
-  { label: 'Regularization', icon: FiFileText },
-  { label: 'Work From Home', icon: FiBriefcase },
-  { label: 'Leave', icon: FiCalendar },
-]
-
-const CONSOLE_NAV: NavItem[] = [
-  { label: 'Employee Directory', icon: FiUsers },
-  { label: 'Payslips', icon: FiCreditCard },
+  { label: 'Me', icon: FiUser },
+  { label: 'My Team', icon: FiUsers },
+  { label: 'Organization', icon: FiBriefcase, to: '/organization' },
 ]
 
 type SidebarProps = {
@@ -57,14 +48,6 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-2">
         <NavSection items={MAIN_NAV} collapsed={collapsed} />
-        <div>
-          {!collapsed && (
-            <p className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-body/60">
-              HR CONSOLE
-            </p>
-          )}
-          <NavSection items={CONSOLE_NAV} collapsed={collapsed} />
-        </div>
       </nav>
 
       <button

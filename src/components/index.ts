@@ -35,3 +35,5 @@ export type { DropdownProps, DropdownOption, DropdownSize } from './Dropdown'
 
 export { ToggleButton } from './ToggleButton'
 export type { ToggleButtonProps, ToggleButtonSize } from './ToggleButton'
+
+export { ComingSoon } from './ComingSoon'

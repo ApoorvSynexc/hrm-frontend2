@@ -3,6 +3,7 @@ import Login from '../pages/auth/login'
 import Home from '../pages/home'
 import ProfilePage from '../pages/profile'
 import ConfigurationPage from '../pages/configuration'
+import OrganizationPage from '../pages/organization'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PublicRoute } from './PublicRoute'
 import { AppLayout } from '../layout/AppLayout'
@@ -30,6 +31,7 @@ export function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/configuration" element={<Navigate to="/configuration/role" replace />} />
         <Route path="/configuration/:module" element={<ConfigurationPage />} />
+        <Route path="/organization" element={<OrganizationPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
