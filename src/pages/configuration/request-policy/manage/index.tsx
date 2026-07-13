@@ -132,9 +132,11 @@ export default function ManageRequestPolicyModal({
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
         {createRequestPolicy.isError && (
-          <Typography variant="body-sm" className="text-red-500">
-            {getErrorMessage(createRequestPolicy.error)}
-          </Typography>
+          <div className="sticky -top-4 z-20 -mx-5 -mb-1 bg-surface px-5 pb-3 pt-4 shadow-md">
+            <Typography variant="body-sm" className="text-red-500">
+              {getErrorMessage(createRequestPolicy.error)}
+            </Typography>
+          </div>
         )}
 
         <TextField

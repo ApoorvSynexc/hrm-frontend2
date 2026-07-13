@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { useEffect, useMemo, useState } from 'react'
+import { Controller, useForm, type FieldErrors } from 'react-hook-form'
 import { joiResolver } from '@hookform/resolvers/joi'
-import { Button, Dropdown, Modal, TextField, Typography } from '../../../../components'
+import { Button, Dropdown, Modal, SearchableSelect, TextField, Typography } from '../../../../components'
 import { getErrorMessage } from '../../../../lib'
 import {
   useDepartment,
@@ -46,6 +46,16 @@ export default function ManageEmployeeModal({ open, onClose, employee }: ManageE
   const roles = getRoles.data?.roles ?? []
   const managers = (getEmployees.data?.employees ?? []).filter((e) => e.id !== employee?.id)
 
+  // The employee list endpoint has no server-side search, so we fetch the
+  // page above once and filter it client-side once the user has typed at
+  // least MIN_MANAGER_SEARCH_CHARS characters.
+  const [managerSearchTerm, setManagerSearchTerm] = useState('')
+  const managerSearchResults = useMemo(() => {
+    const term = managerSearchTerm.trim().toLowerCase()
+    if (term.length < 3) return []
+    return managers.filter((m) => `${m.firstName} ${m.lastName}`.toLowerCase().includes(term))
+  }, [managers, managerSearchTerm])
+
   const {
     register,
     control,
@@ -86,10 +96,10 @@ export default function ManageEmployeeModal({ open, onClose, employee }: ManageE
       lastName: values.lastName,
       email: values.email,
       hireDate: values.hireDate || undefined,
-      departmentId: values.departmentId || undefined,
-      designationId: values.designationId || undefined,
+      departmentId: values.departmentId,
+      designationId: values.designationId,
       roleId: values.roleId,
-      reportingManagerId: values.reportingManagerId || undefined,
+      reportingManagerId: values.reportingManagerId,
     }
 
     if (isEdit && employee) {
@@ -97,6 +107,17 @@ export default function ManageEmployeeModal({ open, onClose, employee }: ManageE
     } else {
       createEmployee.mutate({ ...shared, password: values.password }, { onSuccess: onClose })
     }
+  }
+
+  // If the user has scrolled down to fill later fields, a validation error
+  // on an earlier field (or the top error banner) can end up off-screen with
+  // nothing visibly wrong — scroll the first offending field into view.
+  const onInvalid = (formErrors: FieldErrors<EmployeeFormValues>) => {
+    const firstField = Object.keys(formErrors)[0]
+    if (!firstField) return
+    document
+      .querySelector(`[name="${firstField}"], [data-field="${firstField}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
   return (
@@ -110,17 +131,19 @@ export default function ManageEmployeeModal({ open, onClose, employee }: ManageE
           <Button variant="outline" size="sm" onClick={onClose} disabled={mutation.isPending}>
             Cancel
           </Button>
-          <Button size="sm" loading={mutation.isPending} onClick={handleSubmit(onSubmit)}>
+          <Button size="sm" loading={mutation.isPending} onClick={handleSubmit(onSubmit, onInvalid)}>
             {isEdit ? 'Save Changes' : 'Create Employee'}
           </Button>
         </>
       }
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} noValidate className="flex flex-col gap-4">
         {mutation.isError && (
-          <Typography variant="body-sm" className="text-red-500">
-            {getErrorMessage(mutation.error)}
-          </Typography>
+          <div className="sticky -top-4 z-20 -mx-5 -mb-1 bg-surface px-5 pb-3 pt-4 shadow-md">
+            <Typography variant="body-sm" className="text-red-500">
+              {getErrorMessage(mutation.error)}
+            </Typography>
+          </div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
@@ -164,59 +187,81 @@ export default function ManageEmployeeModal({ open, onClose, employee }: ManageE
         <TextField label="Hire Date" type="date" error={errors.hireDate?.message} {...register('hireDate')} />
 
         <div className="grid grid-cols-2 gap-3">
+          <div data-field="departmentId">
+            <Controller
+              name="departmentId"
+              control={control}
+              render={({ field }) => (
+                <Dropdown
+                  label="Department"
+                  required
+                  options={departments.map((d) => ({ label: d.name, value: d.id }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.departmentId?.message}
+                />
+              )}
+            />
+          </div>
+          <div data-field="designationId">
+            <Controller
+              name="designationId"
+              control={control}
+              render={({ field }) => (
+                <Dropdown
+                  label="Designation"
+                  required
+                  options={designations.map((d) => ({ label: d.name, value: d.id }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={errors.designationId?.message}
+                />
+              )}
+            />
+          </div>
+        </div>
+
+        <div data-field="roleId">
           <Controller
-            name="departmentId"
+            name="roleId"
             control={control}
             render={({ field }) => (
               <Dropdown
-                label="Department"
-                options={departments.map((d) => ({ label: d.name, value: d.id }))}
+                label="Role"
+                required
+                options={roles.map((r) => ({ label: r.name, value: r.id }))}
                 value={field.value}
                 onChange={field.onChange}
-              />
-            )}
-          />
-          <Controller
-            name="designationId"
-            control={control}
-            render={({ field }) => (
-              <Dropdown
-                label="Designation"
-                options={designations.map((d) => ({ label: d.name, value: d.id }))}
-                value={field.value}
-                onChange={field.onChange}
+                error={errors.roleId?.message}
               />
             )}
           />
         </div>
 
-        <Controller
-          name="roleId"
-          control={control}
-          render={({ field }) => (
-            <Dropdown
-              label="Role"
-              required
-              options={roles.map((r) => ({ label: r.name, value: r.id }))}
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.roleId?.message}
-            />
-          )}
-        />
-
-        <Controller
-          name="reportingManagerId"
-          control={control}
-          render={({ field }) => (
-            <Dropdown
-              label="Reporting Manager"
-              options={managers.map((m) => ({ label: `${m.firstName} ${m.lastName}`, value: m.id }))}
-              value={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
+        <div data-field="reportingManagerId">
+          <Controller
+            name="reportingManagerId"
+            control={control}
+            render={({ field }) => (
+              <SearchableSelect
+                label="Reporting Manager"
+                required
+                placeholder="Search employee by name…"
+                data={managerSearchResults}
+                selectedKey={field.value}
+                selectedItem={managers.find((m) => m.id === field.value) ?? null}
+                isLoading={getEmployees.isLoading}
+                onSearch={setManagerSearchTerm}
+                onSelect={(m) => field.onChange(m.id)}
+                onRemove={() => field.onChange('')}
+                minCharRequired={3}
+                displayFormat={(m) => `${m.firstName} ${m.lastName}`}
+                noOptionsMessage="No matching employees"
+                error={errors.reportingManagerId?.message}
+              />
+            )}
+          />
+        </div>
       </form>
     </Modal>
   )

@@ -33,6 +33,9 @@ export type { ConfirmDialogProps } from './ConfirmDialog'
 export { Dropdown } from './Dropdown'
 export type { DropdownProps, DropdownOption, DropdownSize } from './Dropdown'
 
+export { SearchableSelect } from './SearchableSelect'
+export type { SearchableSelectProps, SearchableSelectSize } from './SearchableSelect'
+
 export { ToggleButton } from './ToggleButton'
 export type { ToggleButtonProps, ToggleButtonSize } from './ToggleButton'
 

@@ -13,9 +13,10 @@ export type EmployeeFormValues = {
 }
 
 /**
- * Mirrors backend middlewares/joi/employee: firstName/lastName/email/roleId
- * required on both create and edit (password only required on create — the
- * modal itself skips rendering/validating it when editing).
+ * Backend middlewares/joi/employee only requires firstName/lastName/email/roleId
+ * (password only required on create — the modal skips rendering/validating it
+ * when editing). Department/Designation/Reporting Manager are enforced as
+ * required here as a stricter frontend-only rule.
  */
 export const employeeSchema = Joi.object<EmployeeFormValues>({
   firstName: Joi.string().max(50).required().messages({
@@ -34,10 +35,16 @@ export const employeeSchema = Joi.object<EmployeeFormValues>({
     'string.min': 'Password must be at least 6 characters',
   }),
   hireDate: Joi.string().allow(''),
-  departmentId: Joi.string().allow(''),
-  designationId: Joi.string().allow(''),
+  departmentId: Joi.string().required().messages({
+    'string.empty': 'Department is required',
+  }),
+  designationId: Joi.string().required().messages({
+    'string.empty': 'Designation is required',
+  }),
   roleId: Joi.string().required().messages({
     'string.empty': 'Role is required',
   }),
-  reportingManagerId: Joi.string().allow(''),
+  reportingManagerId: Joi.string().required().messages({
+    'string.empty': 'Reporting manager is required',
+  }),
 })

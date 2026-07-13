@@ -72,9 +72,11 @@ export default function ManageDesignationModal({
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         {mutation.isError && (
-          <Typography variant="body-sm" className="text-red-500">
-            {getErrorMessage(mutation.error)}
-          </Typography>
+          <div className="sticky -top-4 z-20 -mx-5 -mb-1 bg-surface px-5 pb-3 pt-4 shadow-md">
+            <Typography variant="body-sm" className="text-red-500">
+              {getErrorMessage(mutation.error)}
+            </Typography>
+          </div>
         )}
 
         <TextField

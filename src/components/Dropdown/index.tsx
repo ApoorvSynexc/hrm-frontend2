@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { FiCheck, FiChevronDown } from 'react-icons/fi'
+import { useFloatingPosition } from '../../hooks'
 
 export type DropdownSize = 'sm' | 'md' | 'lg'
 
@@ -46,16 +48,27 @@ export function Dropdown({
 }: DropdownProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
   const generatedId = useId()
   const triggerId = `${generatedId}-trigger`
   const describedBy = error ? `${generatedId}-error` : helperText ? `${generatedId}-helper` : undefined
 
   const selected = options.find((option) => option.value === value)
+  const position = useFloatingPosition(open, triggerRef)
 
   useEffect(() => {
     if (!open) return
     const handleClick = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (
+        rootRef.current &&
+        !rootRef.current.contains(target) &&
+        listRef.current &&
+        !listRef.current.contains(target)
+      ) {
+        setOpen(false)
+      }
     }
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
@@ -83,6 +96,7 @@ export function Dropdown({
         </label>
       )}
       <button
+        ref={triggerRef}
         id={triggerId}
         type="button"
         disabled={disabled}
@@ -104,40 +118,51 @@ export function Dropdown({
         />
       </button>
 
-      {open && (
-        <ul
-          role="listbox"
-          tabIndex={-1}
-          className="absolute z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-lg border border-border bg-surface py-1 shadow-lg"
-        >
-          {options.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-body">No options</li>
-          ) : (
-            options.map((option) => {
-              const isSelected = option.value === value
-              return (
-                <li key={option.value}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    disabled={option.disabled}
-                    onClick={() => selectOption(option)}
-                    className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors ${
-                      option.disabled
-                        ? 'cursor-not-allowed text-body/40'
-                        : 'text-heading hover:bg-surface-2'
-                    } ${isSelected ? 'bg-accent-bg text-accent' : ''}`}
-                  >
-                    {option.label}
-                    {isSelected && <FiCheck size={14} />}
-                  </button>
-                </li>
-              )
-            })
-          )}
-        </ul>
-      )}
+      {open &&
+        position &&
+        createPortal(
+          <ul
+            ref={listRef}
+            role="listbox"
+            tabIndex={-1}
+            style={{
+              position: 'fixed',
+              top: position.top,
+              bottom: position.bottom,
+              left: position.left,
+              width: position.width,
+            }}
+            className="z-[60] max-h-60 overflow-y-auto rounded-lg border border-border bg-surface py-1 shadow-lg"
+          >
+            {options.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-body">No options</li>
+            ) : (
+              options.map((option) => {
+                const isSelected = option.value === value
+                return (
+                  <li key={option.value}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      disabled={option.disabled}
+                      onClick={() => selectOption(option)}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors ${
+                        option.disabled
+                          ? 'cursor-not-allowed text-body/40'
+                          : 'text-heading hover:bg-surface-2'
+                      } ${isSelected ? 'bg-accent-bg text-accent' : ''}`}
+                    >
+                      {option.label}
+                      {isSelected && <FiCheck size={14} />}
+                    </button>
+                  </li>
+                )
+              })
+            )}
+          </ul>,
+          document.body,
+        )}
 
       {error ? (
         <p id={`${generatedId}-error`} className="mt-1 text-xs text-red-500">
