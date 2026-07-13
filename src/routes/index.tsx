@@ -28,7 +28,8 @@ export function AppRoutes() {
       >
         <Route path="/home" element={<Home />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/configuration" element={<ConfigurationPage />} />
+        <Route path="/configuration" element={<Navigate to="/configuration/role" replace />} />
+        <Route path="/configuration/:module" element={<ConfigurationPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

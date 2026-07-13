@@ -1,4 +1,5 @@
-import { useState, type ComponentType } from 'react'
+import { type ComponentType } from 'react'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
   FiBriefcase,
   FiCalendar,
@@ -83,8 +84,15 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
 }
 
 export default function ConfigurationPage() {
-  const [active, setActive] = useState('role')
-  const ActiveModule = MODULE_COMPONENTS[active] ?? Role
+  const { module } = useParams<{ module: string }>()
+  const navigate = useNavigate()
+
+  if (!module || !MODULE_COMPONENTS[module]) {
+    return <Navigate to="/configuration/role" replace />
+  }
+
+  const active = module
+  const ActiveModule = MODULE_COMPONENTS[active]
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -110,7 +118,7 @@ export default function ConfigurationPage() {
                     <li key={item.key}>
                       <button
                         type="button"
-                        onClick={() => setActive(item.key)}
+                        onClick={() => navigate(`/configuration/${item.key}`)}
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors ${
                           isActive

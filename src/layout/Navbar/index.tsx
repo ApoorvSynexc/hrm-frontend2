@@ -19,7 +19,9 @@ export function Navbar() {
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : undefined
-  const pageTitle = PAGE_TITLES[pathname] ?? 'Dashboard'
+  const pageTitle = pathname.startsWith('/configuration')
+    ? PAGE_TITLES['/configuration']
+    : (PAGE_TITLES[pathname] ?? 'Dashboard')
 
   return (
     <header className="flex h-16 items-center gap-6 border-b border-border bg-surface px-6">
