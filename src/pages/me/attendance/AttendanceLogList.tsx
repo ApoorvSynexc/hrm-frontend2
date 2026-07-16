@@ -5,7 +5,6 @@ import type { Attendance } from '../../../services'
 import {
   DAILY_TARGET_MINUTES,
   STATUS_BADGE,
-  STATUS_BORDER,
   STATUS_GRADIENT,
   STATUS_LABEL,
   formatMinutes,
@@ -77,7 +76,7 @@ function AttendanceDayRow({ row }: { row: Attendance }) {
   const weekday = dateObj.toLocaleDateString(undefined, { weekday: 'short' })
 
   return (
-    <div className={`border-l-4 border-b border-border last:border-b-0 ${STATUS_BORDER[row.status]}`}>
+    <div className="border-b border-border last:border-b-0">
       <button
         type="button"
         onClick={() => hasSessions && setExpanded((v) => !v)}

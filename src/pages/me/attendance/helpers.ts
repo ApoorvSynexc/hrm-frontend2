@@ -28,19 +28,6 @@ export const STATUS_BADGE: Record<AttendanceStatus, string> = {
   DELETED: 'bg-surface-2 text-body',
 }
 
-export const STATUS_BORDER: Record<AttendanceStatus, string> = {
-  PENDING: 'border-l-body/20',
-  PRESENT: 'border-l-green-500',
-  ABSENT: 'border-l-red-500',
-  HALF_DAY: 'border-l-amber-500',
-  LEAVE: 'border-l-accent',
-  HOLIDAY: 'border-l-accent',
-  WEEK_OFF: 'border-l-body/20',
-  MISSING_CHECKIN: 'border-l-red-500',
-  MISSING_CHECKOUT: 'border-l-red-500',
-  DELETED: 'border-l-body/20',
-}
-
 /**
  * Gradient fills for the per-row duration bar. Applied via inline `style`
  * (not Tailwind classes) — Tailwind's dev-server scanner has twice failed to
