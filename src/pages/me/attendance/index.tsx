@@ -6,6 +6,7 @@ import { useAttendance, type Attendance as AttendanceRecord } from '../../../ser
 import { dayjs, formatDate, formatMinutes, formatTime, startOfWeek, toISODate } from '../../../utils/date'
 import { AttendanceLogList } from './AttendanceLogList'
 import Calendar from './Calendar'
+import WorkFromHome from '../work-from-home'
 import Regularization from '../regularization'
 import { DAILY_TARGET_MINUTES, DURATION_GRADIENT } from './helpers'
 
@@ -15,6 +16,7 @@ const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const LOG_TABS = [
   { key: 'log', label: 'Attendance Log' },
   { key: 'calendar', label: 'Calendar' },
+  { key: 'wfh', label: 'Work From Home' },
   { key: 'requests', label: 'Regularization' },
 ]
 
@@ -197,6 +199,8 @@ export default function Attendance() {
           />
         ) : logTab === 'calendar' ? (
           <Calendar />
+        ) : logTab === 'wfh' ? (
+          <WorkFromHome />
         ) : (
           <Regularization />
         )}
