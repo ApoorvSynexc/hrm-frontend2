@@ -65,9 +65,9 @@ export default function Attendance() {
     ? Math.round((presentDays.filter((r) => !r.isLate).length / presentDays.length) * 100)
     : 0
 
-  const handleCheckIn = () => checkIn.mutate({})
+  const handleCheckIn = () => checkIn.mutate({ checkInMethod: 'WEB' })
   const handleCheckOut = () => {
-    if (today && 'id' in today) checkOut.mutate({ id: today.id })
+    if (today && 'id' in today) checkOut.mutate({ id: today.id, checkOutMethod: 'WEB' })
   }
 
   return (

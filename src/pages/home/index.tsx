@@ -56,9 +56,9 @@ export default function Home() {
   const isInSession = hasStartedToday && 'summary' in today! && today.summary.currentStatus === 'IN_SESSION'
   const todayMinutesWorked = hasStartedToday && 'summary' in today! ? today.summary.totalMinutesWorked : 0
 
-  const handleCheckIn = () => checkIn.mutate({ checkInMethod: clockInMode })
+  const handleCheckIn = () => checkIn.mutate({ checkInMethod: 'WEB' })
   const handleCheckOut = () => {
-    if (today && 'id' in today) checkOut.mutate({ id: today.id, checkOutMethod: clockInMode })
+    if (today && 'id' in today) checkOut.mutate({ id: today.id, checkOutMethod: 'WEB' })
   }
 
   return (
