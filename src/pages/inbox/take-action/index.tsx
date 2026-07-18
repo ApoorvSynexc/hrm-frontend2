@@ -46,8 +46,8 @@ export default function TakeAction() {
   ]
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row">
-      <aside className="shrink-0 rounded-xl border border-border bg-surface p-3 md:w-60">
+    <div className="flex h-full min-h-0 flex-col gap-4 md:flex-row">
+      <aside className="shrink-0 overflow-y-auto rounded-xl border border-border bg-surface p-3 md:w-60">
         <Typography variant="overline" color="body" className="mb-2 block px-2">
           Pending Tasks
         </Typography>
@@ -72,7 +72,7 @@ export default function TakeAction() {
         </ul>
       </aside>
 
-      <div className="min-w-0 flex-1 rounded-xl border border-border bg-surface">
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto rounded-xl border border-border bg-surface">
         {approveRequest.isError && (
           <div className="border-b border-border px-4 py-3">
             <Typography variant="body-sm" className="text-red-500">

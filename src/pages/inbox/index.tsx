@@ -19,9 +19,11 @@ export default function InboxPage() {
   const TABS = [{ key: 'take-action', label: `Take Action (${totalPending})` }]
 
   return (
-    <div className="flex flex-col gap-4">
-      <Tabs items={TABS} active={activeTab} onChange={setActiveTab} />
-      <ActiveTab />
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <Tabs items={TABS} active={activeTab} onChange={setActiveTab} className="shrink-0" />
+      <div className="min-h-0 flex-1">
+        <ActiveTab />
+      </div>
     </div>
   )
 }
