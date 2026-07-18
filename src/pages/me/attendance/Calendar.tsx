@@ -7,7 +7,16 @@ import {
   type MonthlyCalendarDay,
   type MonthlySummary,
 } from '../../../services'
-import { STATUS_BADGE, STATUS_LABEL, formatMinutes } from './helpers'
+import {
+  dayjs,
+  daysInMonth as daysInMonthCount,
+  formatMinutes,
+  mondayFirstWeekday,
+  monthLabel as formatMonthLabel,
+  toISODate,
+  type Dayjs,
+} from '../../../utils/date'
+import { STATUS_BADGE, STATUS_LABEL } from './helpers'
 
 const WEEKDAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -39,37 +48,28 @@ const SUMMARY_ITEMS: { key: keyof Omit<MonthlySummary, 'year' | 'month' | 'total
   { key: 'lateDays', label: 'Late', hex: STATUS_HEX.HALF_DAY },
 ]
 
-function toISODate(date: Date) {
-  return date.toISOString().slice(0, 10)
-}
-
-/** 0 = Monday … 6 = Sunday, matching WEEKDAY_HEADERS. */
-function mondayFirstDay(date: Date) {
-  return (date.getDay() + 6) % 7
-}
-
 export default function Calendar() {
-  const now = new Date()
-  const [year, setYear] = useState(now.getFullYear())
-  const [month, setMonth] = useState(now.getMonth() + 1) // 1-12
+  const now = dayjs()
+  const [year, setYear] = useState(now.year())
+  const [month, setMonth] = useState(now.month() + 1) // 1-12
 
   const { getMonthly } = useAttendance({ monthlyParams: { year, month } })
 
   const calendarByDate = useMemo(() => {
     const map = new Map<string, MonthlyCalendarDay>()
-    ;(getMonthly.data?.calendar ?? []).forEach((day) => map.set(day.date.slice(0, 10), day))
+    ;(getMonthly.data?.calendar ?? []).forEach((day) => map.set(toISODate(day.date), day))
     return map
   }, [getMonthly.data])
 
   const cells = useMemo(() => {
-    const firstOfMonth = new Date(year, month - 1, 1)
-    const daysInMonth = new Date(year, month, 0).getDate()
-    const leadingBlanks = mondayFirstDay(firstOfMonth)
+    const firstOfMonth = dayjs().year(year).month(month - 1).date(1)
+    const totalDays = daysInMonthCount(year, month)
+    const leadingBlanks = mondayFirstWeekday(firstOfMonth)
 
-    const items: { date: Date | null; iso: string | null }[] = []
+    const items: { date: Dayjs | null; iso: string | null }[] = []
     for (let i = 0; i < leadingBlanks; i++) items.push({ date: null, iso: null })
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(year, month - 1, d)
+    for (let d = 1; d <= totalDays; d++) {
+      const date = firstOfMonth.date(d)
       items.push({ date, iso: toISODate(date) })
     }
     while (items.length % 7 !== 0) items.push({ date: null, iso: null })
@@ -77,34 +77,25 @@ export default function Calendar() {
   }, [year, month])
 
   const goToPrevMonth = () => {
-    if (month === 1) {
-      setYear((y) => y - 1)
-      setMonth(12)
-    } else {
-      setMonth((m) => m - 1)
-    }
+    const prev = dayjs().year(year).month(month - 1).subtract(1, 'month')
+    setYear(prev.year())
+    setMonth(prev.month() + 1)
   }
 
   const goToNextMonth = () => {
-    if (month === 12) {
-      setYear((y) => y + 1)
-      setMonth(1)
-    } else {
-      setMonth((m) => m + 1)
-    }
+    const next = dayjs().year(year).month(month - 1).add(1, 'month')
+    setYear(next.year())
+    setMonth(next.month() + 1)
   }
 
   const goToToday = () => {
-    setYear(now.getFullYear())
-    setMonth(now.getMonth() + 1)
+    setYear(now.year())
+    setMonth(now.month() + 1)
   }
 
-  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(undefined, {
-    month: 'long',
-    year: 'numeric',
-  })
+  const monthLabel = formatMonthLabel(year, month)
   const todayISO = toISODate(now)
-  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
+  const isCurrentMonth = year === now.year() && month === now.month() + 1
   const summary = getMonthly.data?.summary
 
   return (
@@ -208,7 +199,7 @@ export default function Calendar() {
                       isToday ? 'bg-accent text-accent-fg' : 'text-heading'
                     }`}
                   >
-                    {cell.date.getDate()}
+                    {cell.date.date()}
                   </span>
                   {day && (
                     <span

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks'
+import { currentYear } from '../../utils/date'
 import type { CreateLeaveInput, Leave, LeaveBalance, LeaveListMeta, LeaveListParams } from './types'
 
 export type {
@@ -27,7 +28,7 @@ export function useLeave({ listParams, balanceYear }: UseLeaveOptions = {}) {
   const queryClient = useQueryClient()
   const invalidate = () => queryClient.invalidateQueries({ queryKey: leaveKeys.all })
 
-  const year = balanceYear ?? new Date().getFullYear()
+  const year = balanceYear ?? currentYear()
 
   const getBalances = useQuery({
     queryKey: leaveKeys.balances(year),

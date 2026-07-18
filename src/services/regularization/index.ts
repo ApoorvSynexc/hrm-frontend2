@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks'
+import { currentYear } from '../../utils/date'
 import type {
   CreateRegularizationInput,
   Regularization,
@@ -34,7 +35,7 @@ export function useRegularization({ listParams, balanceYear }: UseRegularization
   const queryClient = useQueryClient()
   const invalidate = () => queryClient.invalidateQueries({ queryKey: regularizationKeys.all })
 
-  const year = balanceYear ?? new Date().getFullYear()
+  const year = balanceYear ?? currentYear()
 
   const getBalance = useQuery({
     queryKey: regularizationKeys.balance(year),

@@ -3,10 +3,11 @@ import { FiLogIn, FiLogOut } from 'react-icons/fi'
 import { Button, Card, Tabs, Typography } from '../../../components'
 import { getErrorMessage } from '../../../lib'
 import { useAttendance, type Attendance as AttendanceRecord } from '../../../services'
+import { dayjs, formatDate, formatMinutes, formatTime, startOfWeek, toISODate } from '../../../utils/date'
 import { AttendanceLogList } from './AttendanceLogList'
 import Calendar from './Calendar'
 import Regularization from '../regularization'
-import { DAILY_TARGET_MINUTES, DURATION_GRADIENT, formatMinutes, formatTime, startOfWeek, toISODate } from './helpers'
+import { DAILY_TARGET_MINUTES, DURATION_GRADIENT } from './helpers'
 
 const PAGE_SIZE = 10
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -18,9 +19,9 @@ const LOG_TABS = [
 ]
 
 function useLiveClock() {
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(() => dayjs())
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000)
+    const id = setInterval(() => setNow(dayjs()), 1000)
     return () => clearInterval(id)
   }, [])
   return now
@@ -30,15 +31,11 @@ export default function Attendance() {
   const [page, setPage] = useState(1)
   const [logTab, setLogTab] = useState('log')
   const now = useLiveClock()
-  const todayISO = toISODate(new Date())
+  const todayISO = toISODate()
 
   const weekDates = useMemo(() => {
-    const start = startOfWeek(new Date())
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(start)
-      d.setDate(d.getDate() + i)
-      return d
-    })
+    const start = startOfWeek()
+    return Array.from({ length: 7 }, (_, i) => start.add(i, 'day'))
   }, [])
 
   const { getToday, getAttendanceList, checkIn, checkOut } = useAttendance({
@@ -57,7 +54,7 @@ export default function Attendance() {
   const weekRecords = getWeekList.data?.records ?? []
   const weekRecordByDate = useMemo(() => {
     const map = new Map<string, AttendanceRecord>()
-    weekRecords.forEach((r) => map.set(r.date.slice(0, 10), r))
+    weekRecords.forEach((r) => map.set(toISODate(r.date), r))
     return map
   }, [weekRecords])
   const presentDays = weekRecords.filter((r) => r.totalMinutes)
@@ -105,7 +102,7 @@ export default function Attendance() {
               return (
                 <span
                   key={iso}
-                  title={d.toLocaleDateString()}
+                  title={formatDate(d)}
                   className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
                     isToday
                       ? 'bg-accent text-accent-fg'
@@ -143,7 +140,7 @@ export default function Attendance() {
         <Card title="Actions">
           <div className="flex flex-col items-center gap-3 text-center">
             <Typography variant="h3" className="font-mono tabular-nums">
-              {now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              {now.format('hh:mm:ss A')}
             </Typography>
 
             {isInSession ? (

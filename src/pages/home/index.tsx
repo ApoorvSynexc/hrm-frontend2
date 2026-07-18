@@ -16,6 +16,7 @@ import { Button, Card, Tabs, Typography } from '../../components'
 import { useSession } from '../../hooks'
 import { getErrorMessage } from '../../lib'
 import { useAttendance } from '../../services'
+import { dayjs, formatMinutes } from '../../utils/date'
 
 const ORG_TABS = [
   { key: 'organization', label: 'Organization' },
@@ -31,19 +32,12 @@ const COMPOSER_TABS = [
 const CLOCK_IN_MODES = ['Web', 'Work From Home', 'Field Visit']
 
 function useClock() {
-  const [now, setNow] = useState(() => new Date())
+  const [now, setNow] = useState(() => dayjs())
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000)
+    const id = setInterval(() => setNow(dayjs()), 1000)
     return () => clearInterval(id)
   }, [])
   return now
-}
-
-function formatMinutes(value: number | null | undefined) {
-  if (!value) return '0h 0m'
-  const hours = Math.floor(value / 60)
-  const minutes = value % 60
-  return `${hours}h ${minutes}m`
 }
 
 export default function Home() {
@@ -90,15 +84,7 @@ export default function Home() {
 
           <div className="rounded-xl bg-accent p-5 text-accent-fg">
             <div className="flex items-center justify-between text-sm font-medium">
-              <span>
-                Time Today ·{' '}
-                {now.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </span>
+              <span>Time Today · {now.format('ddd, DD MMM YYYY')}</span>
               <button type="button" className="text-xs font-semibold hover:underline">
                 View All
               </button>
@@ -107,14 +93,7 @@ export default function Home() {
               Current Time
             </p>
             <div className="mt-1 flex items-end justify-between gap-3">
-              <span className="text-3xl font-bold tabular-nums">
-                {now.toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: true,
-                })}
-              </span>
+              <span className="text-3xl font-bold tabular-nums">{now.format('hh:mm:ss A')}</span>
               <div className="flex shrink-0 items-center gap-2">
                 {isInSession ? (
                   <Button

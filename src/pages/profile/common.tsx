@@ -1,13 +1,5 @@
 export { Card, ComingSoon } from '../../components'
-
-export function formatDate(value: string | null | undefined): string {
-  if (!value) return '—'
-  return new Date(value).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
-}
+export { formatDate } from '../../utils/date'
 
 export function Field({ label, value }: { label: string; value?: string | null }) {
   return (

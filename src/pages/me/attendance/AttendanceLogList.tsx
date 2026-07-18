@@ -2,14 +2,8 @@ import { useState } from 'react'
 import { FiChevronDown, FiChevronUp, FiLogIn, FiLogOut } from 'react-icons/fi'
 import { Pagination, Typography } from '../../../components'
 import type { Attendance } from '../../../services'
-import {
-  DAILY_TARGET_MINUTES,
-  STATUS_BADGE,
-  STATUS_GRADIENT,
-  STATUS_LABEL,
-  formatMinutes,
-  formatTime,
-} from './helpers'
+import { dayjs, formatMinutes, formatTime } from '../../../utils/date'
+import { DAILY_TARGET_MINUTES, STATUS_BADGE, STATUS_GRADIENT, STATUS_LABEL } from './helpers'
 
 type AttendanceLogListProps = {
   records: Attendance[]
@@ -65,15 +59,13 @@ export function AttendanceLogList({
 
 function AttendanceDayRow({ row }: { row: Attendance }) {
   const [expanded, setExpanded] = useState(false)
-  const logs = [...(row.logs ?? [])].sort(
-    (a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime(),
-  )
+  const logs = [...(row.logs ?? [])].sort((a, b) => dayjs(a.checkIn).diff(dayjs(b.checkIn)))
   const hasSessions = logs.length > 0
 
-  const dateObj = new Date(row.date)
-  const day = dateObj.getDate()
-  const month = dateObj.toLocaleDateString(undefined, { month: 'short' })
-  const weekday = dateObj.toLocaleDateString(undefined, { weekday: 'short' })
+  const dateObj = dayjs(row.firstCheckIn || row.date)
+  const day = dateObj.date()
+  const month = dateObj.format('MMM')
+  const weekday = dateObj.format('ddd')
 
   return (
     <div className="border-b border-border last:border-b-0">

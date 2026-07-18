@@ -2,11 +2,12 @@ import type { ReactNode } from 'react'
 import { FiCheckSquare, FiFlag, FiGift } from 'react-icons/fi'
 import { useSession } from '../../../../hooks'
 import type { Profile } from '../../../../services'
-import { Card, formatDate } from '../../common'
+import { dayjs, formatDate, type Dayjs } from '../../../../utils/date'
+import { Card } from '../../common'
 
 type TimelineEvent = {
   id: string
-  date: Date
+  date: Dayjs
   title: string
   note?: string
   icon: ReactNode
@@ -19,15 +20,14 @@ function ordinal(n: number): string {
   return `${n}${suffixes[(v - 20) % 10] ?? suffixes[v] ?? suffixes[0]}`
 }
 
-function anniversariesSince(joiningDate: string): { date: Date; count: number }[] {
-  const start = new Date(joiningDate)
-  const now = new Date()
-  const results: { date: Date; count: number }[] = []
+function anniversariesSince(joiningDate: string): { date: Dayjs; count: number }[] {
+  const start = dayjs(joiningDate)
+  const now = dayjs()
+  const results: { date: Dayjs; count: number }[] = []
   let count = 1
   while (true) {
-    const anniversary = new Date(start)
-    anniversary.setFullYear(start.getFullYear() + count)
-    if (anniversary > now) break
+    const anniversary = start.add(count, 'year')
+    if (anniversary.isAfter(now)) break
     results.push({ date: anniversary, count })
     count += 1
   }
@@ -40,7 +40,7 @@ function buildEvents(user: Profile): TimelineEvent[] {
   if (user.joiningDate) {
     events.push({
       id: 'joined',
-      date: new Date(user.joiningDate),
+      date: dayjs(user.joiningDate),
       title: 'Joined the company',
       icon: <FiFlag size={14} />,
       colorClass: 'bg-teal-500',
@@ -61,20 +61,20 @@ function buildEvents(user: Profile): TimelineEvent[] {
   if (user.confirmationDate) {
     events.push({
       id: 'confirmed',
-      date: new Date(user.confirmationDate),
+      date: dayjs(user.confirmationDate),
       title: 'Probation Completed',
       icon: <FiCheckSquare size={14} />,
       colorClass: 'bg-purple-500',
     })
   }
 
-  return events.sort((a, b) => b.date.getTime() - a.date.getTime())
+  return events.sort((a, b) => b.date.valueOf() - a.date.valueOf())
 }
 
 function groupByYear(events: TimelineEvent[]): [string, TimelineEvent[]][] {
   const map = new Map<string, TimelineEvent[]>()
   for (const event of events) {
-    const year = String(event.date.getFullYear())
+    const year = String(event.date.year())
     if (!map.has(year)) map.set(year, [])
     map.get(year)!.push(event)
   }
@@ -108,7 +108,7 @@ export default function Timeline() {
                       </span>
                       <div className="pt-0.5">
                         <p className="text-sm font-medium text-accent">{event.title}</p>
-                        <p className="text-xs text-body">{formatDate(event.date.toISOString())}</p>
+                        <p className="text-xs text-body">{formatDate(event.date)}</p>
                         {event.note && (
                           <span className="mt-1.5 inline-block rounded bg-surface-2 px-2 py-1 text-xs text-heading">
                             {event.note}

@@ -50,33 +50,3 @@ export const STATUS_GRADIENT: Record<AttendanceStatus, string> = {
 
 /** Gradient for the single "today" duration bar (Timings card) — always accent-colored. */
 export const DURATION_GRADIENT = 'linear-gradient(to right, var(--accent-hover), var(--accent))'
-
-export function formatTime(value: string | null | undefined) {
-  if (!value) return '—'
-  return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-}
-
-export function formatDate(value: string) {
-  return new Date(value).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-export function formatMinutes(value: number | null) {
-  if (!value) return '0h 0m'
-  const hours = Math.floor(value / 60)
-  const minutes = value % 60
-  return `${hours}h ${minutes}m`
-}
-
-export function toISODate(date: Date) {
-  return date.toISOString().slice(0, 10)
-}
-
-/** Monday-based start of the week containing `date`. */
-export function startOfWeek(date: Date) {
-  const d = new Date(date)
-  const day = d.getDay()
-  const diff = (day === 0 ? -6 : 1) - day
-  d.setDate(d.getDate() + diff)
-  d.setHours(0, 0, 0, 0)
-  return d
-}

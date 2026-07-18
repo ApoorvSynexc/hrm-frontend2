@@ -3,6 +3,7 @@ import { FiCheckCircle, FiClock, FiPieChart, FiPlus } from 'react-icons/fi'
 import { Button, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useRegularization, type Regularization } from '../../../services'
+import { formatDate, formatTime } from '../../../utils/date'
 import ManageRegularizationModal from './manage'
 
 const PAGE_SIZE = 10
@@ -29,14 +30,6 @@ const DAY_PART_LABEL: Record<Regularization['dayPart'], string> = {
   FULL_DAY: 'Full Day',
   FIRST_HALF: 'First Half',
   SECOND_HALF: 'Second Half',
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-function formatTime(value: string) {
-  return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
 function BalanceTile({

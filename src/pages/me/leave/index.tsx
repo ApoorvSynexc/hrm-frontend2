@@ -3,6 +3,7 @@ import { FiPlus, FiX } from 'react-icons/fi'
 import { Button, Card, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useLeave, type Leave } from '../../../services'
+import { formatDate } from '../../../utils/date'
 import ManageLeaveModal from './manage'
 
 const PAGE_SIZE = 10
@@ -23,10 +24,6 @@ const STATUS_COLOR: Record<Leave['status'], string> = {
   WITHDRAWN: 'bg-surface-2 text-body',
   CANCELLED: 'bg-surface-2 text-body',
   DELETED: 'bg-surface-2 text-body',
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function Leave() {

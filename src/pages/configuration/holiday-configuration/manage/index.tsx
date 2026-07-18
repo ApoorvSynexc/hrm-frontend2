@@ -6,6 +6,7 @@ import { Button, Modal, TextField, Typography } from '../../../../components'
 import { getErrorMessage } from '../../../../lib'
 import { useSession } from '../../../../hooks'
 import { useHoliday, type Holiday, type HolidayRestrictionType } from '../../../../services'
+import { dayjs } from '../../../../utils/date'
 import { holidaySchema, type HolidayFormValues } from './validations'
 
 const TYPE_OPTIONS = [
@@ -92,7 +93,7 @@ export default function ManageHolidayModal({
           date: values.date,
           type: values.type,
           restrictionType: values.restrictionType,
-          year: new Date(values.date).getFullYear(),
+          year: dayjs(values.date).year(),
         },
         { onSuccess: onClose },
       )
@@ -103,7 +104,7 @@ export default function ManageHolidayModal({
           date: values.date,
           type: values.type,
           restrictionType: values.restrictionType,
-          year: new Date(values.date).getFullYear(),
+          year: dayjs(values.date).year(),
           userId: user.id,
         },
         { onSuccess: onClose },

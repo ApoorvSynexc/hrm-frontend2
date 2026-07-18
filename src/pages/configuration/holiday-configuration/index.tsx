@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi'
 import { Button, ConfirmDialog, Table, Tabs, ToggleButton, type TableColumn } from '../../../components'
 import { useHoliday, type Holiday } from '../../../services'
+import { formatDateUS } from '../../../utils/date'
 import { ModuleHeader } from '../common'
 import ManageHolidayModal from './manage'
 
@@ -73,12 +74,7 @@ export default function HolidayConfigurationModule() {
       key: 'date',
       header: 'Date',
       width: '130px',
-      render: (row) =>
-        new Date(row.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        }),
+      render: (row) => formatDateUS(row.date),
     },
     {
       key: 'type',
