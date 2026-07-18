@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FiLogIn, FiLogOut } from 'react-icons/fi'
-import { Button, Card, ComingSoon, Tabs, Typography } from '../../../components'
+import { Button, Card, Tabs, Typography } from '../../../components'
 import { getErrorMessage } from '../../../lib'
 import { useAttendance, type Attendance as AttendanceRecord } from '../../../services'
 import { AttendanceLogList } from './AttendanceLogList'
 import Calendar from './Calendar'
+import Regularization from '../regularization'
 import { DAILY_TARGET_MINUTES, DURATION_GRADIENT, formatMinutes, formatTime, startOfWeek, toISODate } from './helpers'
 
 const PAGE_SIZE = 10
@@ -14,8 +15,6 @@ const LOG_TABS = [
   { key: 'log', label: 'Attendance Log' },
   { key: 'calendar', label: 'Calendar' },
   { key: 'requests', label: 'Attendance Requests' },
-  { key: 'overtime', label: 'Overtime Requests' },
-  { key: 'weeklyoff', label: 'Shift Weekly Off Requests' },
 ]
 
 function useLiveClock() {
@@ -202,7 +201,7 @@ export default function Attendance() {
         ) : logTab === 'calendar' ? (
           <Calendar />
         ) : (
-          <ComingSoon label={LOG_TABS.find((t) => t.key === logTab)?.label ?? 'This'} />
+          <Regularization />
         )}
       </Card>
     </div>

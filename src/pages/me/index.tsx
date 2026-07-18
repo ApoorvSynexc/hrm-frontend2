@@ -1,16 +1,16 @@
 import { useState, type ComponentType } from 'react'
 import { Tabs } from '../../components'
 import Attendance from './attendance'
-import Regularization from './regularization'
+import Leave from './leave'
 
 const TABS = [
   { key: 'attendance', label: 'Attendance' },
-  { key: 'regularization', label: 'Regularization' },
+  { key: 'leave', label: 'Leave' },
 ]
 
 const TAB_COMPONENTS: Record<string, ComponentType> = {
   attendance: Attendance,
-  regularization: Regularization,
+  leave: Leave,
 }
 
 export default function MePage() {

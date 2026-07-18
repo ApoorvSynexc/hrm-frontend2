@@ -1,19 +1,42 @@
 import { useMemo, useState } from 'react'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { Typography } from '../../../components'
-import { useAttendance, type MonthlyCalendarDay } from '../../../services'
+import { Button, Typography } from '../../../components'
+import {
+  useAttendance,
+  type AttendanceStatus,
+  type MonthlyCalendarDay,
+  type MonthlySummary,
+} from '../../../services'
 import { STATUS_BADGE, STATUS_LABEL, formatMinutes } from './helpers'
 
 const WEEKDAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-const SUMMARY_ROWS: { key: 'presentDays' | 'halfDays' | 'absentDays' | 'onLeaveDays' | 'holidayDays' | 'weekOffDays' | 'lateDays'; label: string }[] = [
-  { key: 'presentDays', label: 'Present' },
-  { key: 'halfDays', label: 'Half Day' },
-  { key: 'absentDays', label: 'Absent' },
-  { key: 'onLeaveDays', label: 'Leave' },
-  { key: 'holidayDays', label: 'Holiday' },
-  { key: 'weekOffDays', label: 'Week Off' },
-  { key: 'lateDays', label: 'Late' },
+/**
+ * Solid status colors applied via inline style (plain CSS) — same reasoning
+ * as STATUS_GRADIENT in helpers: first-use-only Tailwind utilities in this
+ * folder have failed to compile twice, so color that must render goes inline.
+ */
+const STATUS_HEX: Record<AttendanceStatus, string> = {
+  PENDING: 'rgba(100,116,139,0.5)',
+  PRESENT: '#22c55e',
+  ABSENT: '#ef4444',
+  HALF_DAY: '#f59e0b',
+  LEAVE: 'var(--accent)',
+  HOLIDAY: 'var(--accent)',
+  WEEK_OFF: 'rgba(100,116,139,0.5)',
+  MISSING_CHECKIN: '#ef4444',
+  MISSING_CHECKOUT: '#f59e0b',
+  DELETED: 'rgba(100,116,139,0.5)',
+}
+
+const SUMMARY_ITEMS: { key: keyof Omit<MonthlySummary, 'year' | 'month' | 'totalDays'>; label: string; hex: string }[] = [
+  { key: 'presentDays', label: 'Present', hex: STATUS_HEX.PRESENT },
+  { key: 'halfDays', label: 'Half Day', hex: STATUS_HEX.HALF_DAY },
+  { key: 'absentDays', label: 'Absent', hex: STATUS_HEX.ABSENT },
+  { key: 'onLeaveDays', label: 'Leave', hex: STATUS_HEX.LEAVE },
+  { key: 'holidayDays', label: 'Holiday', hex: STATUS_HEX.HOLIDAY },
+  { key: 'weekOffDays', label: 'Week Off', hex: STATUS_HEX.WEEK_OFF },
+  { key: 'lateDays', label: 'Late', hex: STATUS_HEX.HALF_DAY },
 ]
 
 function toISODate(date: Date) {
@@ -71,44 +94,64 @@ export default function Calendar() {
     }
   }
 
+  const goToToday = () => {
+    setYear(now.getFullYear())
+    setMonth(now.getMonth() + 1)
+  }
+
   const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(undefined, {
     month: 'long',
     year: 'numeric',
   })
   const todayISO = toISODate(now)
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
   const summary = getMonthly.data?.summary
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <Typography variant="h6">{monthLabel}</Typography>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            aria-label="Previous month"
-            onClick={goToPrevMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-body transition-colors hover:bg-surface-2 hover:text-heading"
-          >
-            <FiChevronLeft size={16} />
-          </button>
-          <button
-            type="button"
-            aria-label="Next month"
-            onClick={goToNextMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-body transition-colors hover:bg-surface-2 hover:text-heading"
-          >
-            <FiChevronRight size={16} />
-          </button>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Typography variant="h6">Monthly Calendar</Typography>
+          <Typography variant="body-sm" color="body">
+            Your day-by-day attendance for the selected month.
+          </Typography>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!isCurrentMonth && (
+            <Button variant="outline" size="sm" onClick={goToToday}>
+              Today
+            </Button>
+          )}
+          <div className="flex items-center rounded-lg border border-border">
+            <button
+              type="button"
+              aria-label="Previous month"
+              onClick={goToPrevMonth}
+              className="flex h-8 w-8 items-center justify-center rounded-l-lg text-body transition-colors hover:bg-surface-2 hover:text-heading"
+            >
+              <FiChevronLeft size={16} />
+            </button>
+            <span className="min-w-36 border-x border-border px-3 text-center text-sm font-medium text-heading">
+              {monthLabel}
+            </span>
+            <button
+              type="button"
+              aria-label="Next month"
+              onClick={goToNextMonth}
+              className="flex h-8 w-8 items-center justify-center rounded-r-lg text-body transition-colors hover:bg-surface-2 hover:text-heading"
+            >
+              <FiChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
       {summary && (
-        <div className="flex flex-wrap gap-2">
-          {SUMMARY_ROWS.map(({ key, label }) => (
-            <span
-              key={key}
-              className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-body"
-            >
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {SUMMARY_ITEMS.map(({ key, label, hex }) => (
+            <span key={key} className="inline-flex items-center gap-1.5 text-xs text-body">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: hex }} />
               {label}
               <span className="font-semibold text-heading">{summary[key]}</span>
             </span>
@@ -126,16 +169,25 @@ export default function Calendar() {
         </div>
 
         {getMonthly.isLoading ? (
-          <div className="grid grid-cols-7 gap-px bg-border p-px">
+          <div className="grid grid-cols-7">
             {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="h-20 animate-pulse bg-surface" />
+              <div key={i} className="h-24 animate-pulse border-r border-b border-border bg-surface" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-7 gap-px bg-border p-px">
+          <div className="grid grid-cols-7">
             {cells.map((cell, index) => {
+              const isWeekend = index % 7 >= 5
+
+              // Blank leading/trailing cells (outside the month) blend into
+              // the page — no tint — so weekend shading (below) reads as its
+              // own distinct signal instead of looking identical to "empty".
+              // Every cell draws its own border (rather than relying on a
+              // background-color gap trick) so the grid stays crisp even
+              // against the weekend tint, which would otherwise wash a
+              // same-color gap line out to near-invisibility.
               if (!cell.date || !cell.iso) {
-                return <div key={index} className="h-20 bg-surface/40" />
+                return <div key={index} className="h-24 border-r border-b border-border bg-surface" />
               }
               const day = calendarByDate.get(cell.iso)
               const isToday = cell.iso === todayISO
@@ -143,9 +195,19 @@ export default function Calendar() {
               return (
                 <div
                   key={index}
-                  className={`flex h-20 flex-col gap-1 bg-surface p-2 ${isToday ? 'ring-2 ring-inset ring-accent' : ''}`}
+                  className={`flex h-24 flex-col gap-1.5 border-r border-b border-border p-2 transition-colors ${
+                    isToday
+                      ? 'bg-accent-bg ring-1 ring-inset ring-accent'
+                      : isWeekend
+                        ? 'bg-border/10'
+                        : 'bg-surface hover:bg-surface-2/40'
+                  }`}
                 >
-                  <span className={`text-sm font-medium ${isToday ? 'text-accent' : 'text-heading'}`}>
+                  <span
+                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                      isToday ? 'bg-accent text-accent-fg' : 'text-heading'
+                    }`}
+                  >
                     {cell.date.getDate()}
                   </span>
                   {day && (
@@ -153,14 +215,12 @@ export default function Calendar() {
                       className={`inline-flex w-fit items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${STATUS_BADGE[day.status]}`}
                     >
                       {STATUS_LABEL[day.status]}
+                      {day.isLate ? ' · Late' : ''}
                     </span>
                   )}
                   {day?.totalMinutes ? (
                     <span className="text-[11px] text-body">{formatMinutes(day.totalMinutes)}</span>
                   ) : null}
-                  {day?.isLate && (
-                    <span className="text-[11px] font-medium text-amber-500">Late</span>
-                  )}
                 </div>
               )
             })}

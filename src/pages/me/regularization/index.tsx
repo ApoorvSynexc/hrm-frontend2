@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { FiPlus, FiX } from 'react-icons/fi'
-import { Button, Card, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
+import { FiCheckCircle, FiClock, FiPieChart, FiPlus, FiX } from 'react-icons/fi'
+import { Button, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useRegularization, type Regularization } from '../../../services'
 import ManageRegularizationModal from './manage'
@@ -39,6 +39,32 @@ function formatTime(value: string) {
   return new Date(value).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 }
 
+function BalanceTile({
+  icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: number
+  accent: string
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-border p-4">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${accent}`}>
+        {icon}
+      </div>
+      <div>
+        <Typography variant="caption" color="body" className="block">
+          {label}
+        </Typography>
+        <Typography variant="h5">{value}</Typography>
+      </div>
+    </div>
+  )
+}
+
 export default function Regularization() {
   const { user } = useSession()
   const [page, setPage] = useState(1)
@@ -58,7 +84,7 @@ export default function Regularization() {
     {
       key: 'date',
       header: 'Date',
-      render: (row) => formatDate(row.date),
+      render: (row) => <span className="font-medium text-heading">{formatDate(row.date)}</span>,
     },
     {
       key: 'dayPart',
@@ -105,44 +131,54 @@ export default function Regularization() {
   const balance = getBalance.data
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card
-        title="Regularization Balance"
-        action={
-          <Button size="sm" leftIcon={<FiPlus size={16} />} onClick={() => setManageOpen(true)}>
-            Request Regularization
-          </Button>
-        }
-      >
-        {balance ? (
-          <div className="flex gap-8">
-            <div>
-              <Typography variant="body-sm" color="body">
-                Remaining
-              </Typography>
-              <Typography variant="h5">{balance.remainingDays}</Typography>
-            </div>
-            <div>
-              <Typography variant="body-sm" color="body">
-                Used
-              </Typography>
-              <Typography variant="h5">{balance.usedDays}</Typography>
-            </div>
-            <div>
-              <Typography variant="body-sm" color="body">
-                Total
-              </Typography>
-              <Typography variant="h5">{balance.totalDays}</Typography>
-            </div>
-          </div>
-        ) : (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Typography variant="h6">Regularization</Typography>
           <Typography variant="body-sm" color="body">
-            No regularization balance set up for this year yet.
+            Request corrections for missed or incorrect check-ins and check-outs.
           </Typography>
-        )}
-      </Card>
+        </div>
+        <Button size="sm" leftIcon={<FiPlus size={16} />} onClick={() => setManageOpen(true)}>
+          Request Regularization
+        </Button>
+      </div>
 
-      <Card title="My Requests">
+      {balance ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <BalanceTile
+            icon={<FiCheckCircle size={18} />}
+            label="Remaining"
+            value={balance.remainingDays}
+            accent="bg-green-500/15 text-green-500"
+          />
+          <BalanceTile
+            icon={<FiClock size={18} />}
+            label="Used"
+            value={balance.usedDays}
+            accent="bg-amber-500/15 text-amber-500"
+          />
+          <BalanceTile
+            icon={<FiPieChart size={18} />}
+            label="Total Allowance"
+            value={balance.totalDays}
+            accent="bg-accent-bg text-accent"
+          />
+        </div>
+      ) : (
+        <Typography variant="body-sm" color="body">
+          No regularization balance set up for this year yet.
+        </Typography>
+      )}
+
+      <div>
+        <Typography
+          variant="overline"
+          color="body"
+          className="mb-2 block"
+        >
+          My Requests
+        </Typography>
         <Table
           columns={columns}
           data={getRegularizations.data?.requests ?? []}
@@ -155,7 +191,7 @@ export default function Regularization() {
           pageSize={PAGE_SIZE}
           totalItems={getRegularizations.data?.meta.totalRecords ?? 0}
         />
-      </Card>
+      </div>
 
       <ManageRegularizationModal open={manageOpen} onClose={() => setManageOpen(false)} />
 
