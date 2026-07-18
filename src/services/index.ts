@@ -1,4 +1,5 @@
 export * from './account'
+export * from './approval-request'
 export * from './attendance'
 export * from './auth'
 export * from './configuration'

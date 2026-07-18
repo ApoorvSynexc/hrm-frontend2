@@ -5,6 +5,7 @@ import ProfilePage from '../pages/profile'
 import ConfigurationPage from '../pages/configuration'
 import OrganizationPage from '../pages/organization'
 import MePage from '../pages/me'
+import InboxPage from '../pages/inbox'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PublicRoute } from './PublicRoute'
 import { AppLayout } from '../layout/AppLayout'
@@ -34,6 +35,7 @@ export function AppRoutes() {
         <Route path="/configuration/:module" element={<ConfigurationPage />} />
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/me" element={<MePage />} />
+        <Route path="/inbox" element={<InboxPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

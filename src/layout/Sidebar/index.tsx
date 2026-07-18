@@ -5,9 +5,11 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiHome,
+  FiInbox,
   FiUser,
   FiUsers,
 } from 'react-icons/fi'
+import { useApprovalRequest } from '../../services'
 
 type IconComponent = ComponentType<{ size?: number }>
 
@@ -16,11 +18,14 @@ type NavItem = {
   icon: IconComponent
   /** Omit for nav items that don't have a page yet. */
   to?: string
+  /** Show the pending-approvals count badge on this item. */
+  showPendingBadge?: boolean
 }
 
 const MAIN_NAV: NavItem[] = [
   { label: 'Home', icon: FiHome, to: '/home' },
   { label: 'Me', icon: FiUser, to: '/me' },
+  { label: 'Inbox', icon: FiInbox, to: '/inbox', showPendingBadge: true },
   { label: 'My Team', icon: FiUsers },
   { label: 'Organization', icon: FiBriefcase, to: '/organization' },
 ]
@@ -31,6 +36,10 @@ type SidebarProps = {
 }
 
 export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
+  // Minimal fetch — only the meta.totalRecords count is used for the badge.
+  const { getPendingApprovals } = useApprovalRequest({ listParams: { page: 1, limit: 1 } })
+  const pendingCount = getPendingApprovals.data?.meta.totalRecords ?? 0
+
   return (
     <aside
       className={`relative flex shrink-0 flex-col border-r border-border bg-surface transition-[width] duration-200 ${
@@ -47,7 +56,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
       </div>
 
       <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-2">
-        <NavSection items={MAIN_NAV} collapsed={collapsed} />
+        <NavSection items={MAIN_NAV} collapsed={collapsed} pendingCount={pendingCount} />
       </nav>
 
       <button
@@ -62,20 +71,51 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   )
 }
 
-function NavSection({ items, collapsed }: { items: NavItem[]; collapsed: boolean }) {
+function NavSection({
+  items,
+  collapsed,
+  pendingCount,
+}: {
+  items: NavItem[]
+  collapsed: boolean
+  pendingCount: number
+}) {
   return (
     <ul className="space-y-1">
       {items.map((item) => (
         <li key={item.label}>
-          <NavItemLink item={item} collapsed={collapsed} />
+          <NavItemLink
+            item={item}
+            collapsed={collapsed}
+            badge={item.showPendingBadge && pendingCount > 0 ? pendingCount : undefined}
+          />
         </li>
       ))}
     </ul>
   )
 }
 
-function NavItemLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+function NavItemLink({
+  item,
+  collapsed,
+  badge,
+}: {
+  item: NavItem
+  collapsed: boolean
+  badge?: number
+}) {
   const Icon = item.icon
+
+  const badgeEl =
+    badge !== undefined ? (
+      <span
+        className={`flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white ${
+          collapsed ? 'absolute -right-1 -top-1 h-4 min-w-4 px-1 text-[10px]' : 'ml-auto'
+        }`}
+      >
+        {badge > 99 ? '99+' : badge}
+      </span>
+    ) : null
 
   if (!item.to) {
     return (
@@ -93,13 +133,14 @@ function NavItemLink({ item, collapsed }: { item: NavItem; collapsed: boolean })
     <NavLink
       to={item.to}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+        `relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
           isActive ? 'bg-accent text-accent-fg' : 'text-body hover:bg-surface-2 hover:text-heading'
         }`
       }
     >
       <Icon size={18} />
       {!collapsed && <span className="truncate">{item.label}</span>}
+      {badgeEl}
     </NavLink>
   )
 }

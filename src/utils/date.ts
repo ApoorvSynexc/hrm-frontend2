@@ -1,9 +1,11 @@
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import duration from 'dayjs/plugin/duration'
+import relativeTime from 'dayjs/plugin/relativeTime'
 
 dayjs.extend(isoWeek)
 dayjs.extend(duration)
+dayjs.extend(relativeTime)
 
 /**
  * All date handling in this app goes through dayjs — import `dayjs` from
@@ -39,6 +41,12 @@ export function formatMinutes(value: number | null | undefined): string {
   if (!value) return '0h 0m'
   const d = dayjs.duration(value, 'minutes')
   return `${Math.floor(d.asHours())}h ${d.minutes()}m`
+}
+
+/** "10 months ago" — relative to now. */
+export function fromNow(value: DateInput): string {
+  if (!value) return '—'
+  return dayjs(value).fromNow()
 }
 
 /** "YYYY-MM-DD" */
