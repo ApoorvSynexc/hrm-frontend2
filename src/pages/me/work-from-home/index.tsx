@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FiCheckCircle, FiClock, FiPieChart, FiPlus } from 'react-icons/fi'
+import { FiCheckCircle, FiClock, FiPlus } from 'react-icons/fi'
 import { Button, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useWorkFromHome, type WorkFromHome } from '../../../services'
@@ -33,7 +33,7 @@ const DAY_PART_LABEL: Record<WorkFromHome['startDateDayPart'], string> = {
   SECOND_HALF: 'Second Half',
 }
 
-function BalanceTile({
+function BalanceStat({
   icon,
   label,
   value,
@@ -45,16 +45,10 @@ function BalanceTile({
   accent: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border p-4">
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${accent}`}>
-        {icon}
-      </div>
-      <div>
-        <Typography variant="caption" color="body" className="block">
-          {label}
-        </Typography>
-        <Typography variant="h5">{value}</Typography>
-      </div>
+    <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5">
+      <span className={accent}>{icon}</span>
+      <span className="text-sm text-body">{label}</span>
+      <span className="text-sm font-semibold text-heading">{value}</span>
     </div>
   )
 }
@@ -148,24 +142,18 @@ export default function WorkFromHomePage() {
       </div>
 
       {balance ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <BalanceTile
-            icon={<FiCheckCircle size={18} />}
+        <div className="flex flex-wrap gap-2.5">
+          <BalanceStat
+            icon={<FiCheckCircle size={15} />}
             label="Remaining"
             value={balance.remainingDays}
-            accent="bg-green-500/15 text-green-500"
+            accent="text-green-500"
           />
-          <BalanceTile
-            icon={<FiClock size={18} />}
+          <BalanceStat
+            icon={<FiClock size={15} />}
             label="Used"
             value={balance.usedDays}
-            accent="bg-amber-500/15 text-amber-500"
-          />
-          <BalanceTile
-            icon={<FiPieChart size={18} />}
-            label="Total Allowance"
-            value={balance.totalDays}
-            accent="bg-accent-bg text-accent"
+            accent="text-amber-500"
           />
         </div>
       ) : (
