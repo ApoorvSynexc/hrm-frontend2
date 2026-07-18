@@ -34,7 +34,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   return (
     <aside
       className={`relative flex shrink-0 flex-col border-r border-border bg-surface transition-[width] duration-200 ${
-        collapsed ? 'w-16' : 'w-44'
+        collapsed ? 'w-16' : 'w-56'
       }`}
     >
       <div className="flex h-16 items-center gap-2.5 px-4">
