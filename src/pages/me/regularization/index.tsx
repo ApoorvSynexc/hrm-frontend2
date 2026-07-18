@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FiCheckCircle, FiClock, FiPieChart, FiPlus, FiX } from 'react-icons/fi'
+import { FiCheckCircle, FiClock, FiPieChart, FiPlus } from 'react-icons/fi'
 import { Button, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useRegularization, type Regularization } from '../../../services'
@@ -116,14 +116,14 @@ export default function Regularization() {
       align: 'right',
       render: (row) =>
         row.status === 'PENDING' ? (
-          <button
-            type="button"
-            aria-label={`Withdraw regularization request for ${formatDate(row.date)}`}
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => setWithdrawTarget(row)}
-            className="rounded-lg p-2 text-body transition-colors hover:bg-surface-2 hover:text-red-500"
+            className="!border-red-500/40 !text-red-500 hover:!bg-red-500/10"
           >
-            <FiX size={15} />
-          </button>
+            Withdraw
+          </Button>
         ) : null,
     },
   ]

@@ -14,6 +14,8 @@ import {
 } from 'react-icons/fi'
 import { Button, Card, Tabs, Typography } from '../../components'
 import { useSession } from '../../hooks'
+import { getErrorMessage } from '../../lib'
+import { useAttendance } from '../../services'
 
 const ORG_TABS = [
   { key: 'organization', label: 'Organization' },
@@ -37,6 +39,13 @@ function useClock() {
   return now
 }
 
+function formatMinutes(value: number | null | undefined) {
+  if (!value) return '0h 0m'
+  const hours = Math.floor(value / 60)
+  const minutes = value % 60
+  return `${hours}h ${minutes}m`
+}
+
 export default function Home() {
   const { user } = useSession()
   const now = useClock()
@@ -46,6 +55,17 @@ export default function Home() {
   const [clockInMenuOpen, setClockInMenuOpen] = useState(false)
 
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
+
+  const { getToday, checkIn, checkOut } = useAttendance()
+  const today = getToday.data
+  const hasStartedToday = Boolean(today && 'id' in today)
+  const isInSession = hasStartedToday && 'summary' in today! && today.summary.currentStatus === 'IN_SESSION'
+  const todayMinutesWorked = hasStartedToday && 'summary' in today! ? today.summary.totalMinutesWorked : 0
+
+  const handleCheckIn = () => checkIn.mutate({ checkInMethod: clockInMode })
+  const handleCheckOut = () => {
+    if (today && 'id' in today) checkOut.mutate({ id: today.id, checkOutMethod: clockInMode })
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -96,9 +116,27 @@ export default function Home() {
                 })}
               </span>
               <div className="flex shrink-0 items-center gap-2">
-                <Button size="sm" variant="secondary" className="!bg-surface !text-accent">
-                  Web Clock-In
-                </Button>
+                {isInSession ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="!bg-surface !text-red-600"
+                    loading={checkOut.isPending}
+                    onClick={handleCheckOut}
+                  >
+                    Check Out
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="!bg-surface !text-accent"
+                    loading={checkIn.isPending}
+                    onClick={handleCheckIn}
+                  >
+                    Check In
+                  </Button>
+                )}
                 <div className="relative">
                   <Button
                     size="sm"
@@ -137,6 +175,16 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            <p className="mt-2 text-xs opacity-80">
+              {hasStartedToday ? `Hours today: ${formatMinutes(todayMinutesWorked)}` : 'Not checked in yet today'}
+            </p>
+
+            {(checkIn.isError || checkOut.isError) && (
+              <p className="mt-2 inline-block rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-red-700">
+                {getErrorMessage(checkIn.error ?? checkOut.error)}
+              </p>
+            )}
           </div>
 
           <Card
