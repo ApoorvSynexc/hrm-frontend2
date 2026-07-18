@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FiPlus, FiX } from 'react-icons/fi'
+import { FiPlus } from 'react-icons/fi'
 import { Button, Card, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useLeave, type Leave } from '../../../services'
@@ -84,14 +84,14 @@ export default function Leave() {
       align: 'right',
       render: (row) =>
         row.status === 'PENDING' ? (
-          <button
-            type="button"
-            aria-label={`Withdraw leave request for ${formatDate(row.startDate)}`}
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => setWithdrawTarget(row)}
-            className="rounded-lg p-2 text-body transition-colors hover:bg-surface-2 hover:text-red-500"
+            className="!border-red-500/40 !text-red-500 hover:!bg-red-500/10"
           >
-            <FiX size={15} />
-          </button>
+            Withdraw
+          </Button>
         ) : null,
     },
   ]

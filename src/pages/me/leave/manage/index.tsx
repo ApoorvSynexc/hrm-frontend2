@@ -3,7 +3,7 @@ import { Controller, useForm, type FieldErrors } from 'react-hook-form'
 import { joiResolver } from '@hookform/resolvers/joi'
 import { Button, Dropdown, Modal, TextField, Typography } from '../../../../components'
 import { getErrorMessage } from '../../../../lib'
-import { useLeave, type LeaveBalance } from '../../../../services'
+import { useLeave, useLeaveType, type LeaveBalance } from '../../../../services'
 import { leaveSchema, type LeaveFormValues } from './validations'
 
 const DEFAULT_VALUES: LeaveFormValues = {
@@ -22,6 +22,8 @@ type ManageLeaveModalProps = {
 
 export default function ManageLeaveModal({ open, onClose, balances }: ManageLeaveModalProps) {
   const { createLeave } = useLeave()
+  const { getLeaveTypes } = useLeaveType({ listParams: { page: 1, limit: 100 } })
+  const leaveTypes = getLeaveTypes.data?.leaveTypes ?? []
 
   const {
     register,
@@ -102,10 +104,7 @@ export default function ManageLeaveModal({ open, onClose, balances }: ManageLeav
                 label="Leave Type"
                 required
                 placeholder="Select leave type…"
-                options={balances.map((b) => ({
-                  label: b.leaveType?.name ?? b.leaveTypeId,
-                  value: b.leaveTypeId,
-                }))}
+                options={leaveTypes.map((lt) => ({ label: lt.name, value: lt.id }))}
                 value={field.value}
                 onChange={field.onChange}
                 error={errors.leaveTypeId?.message}

@@ -15,7 +15,7 @@ const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const LOG_TABS = [
   { key: 'log', label: 'Attendance Log' },
   { key: 'calendar', label: 'Calendar' },
-  { key: 'requests', label: 'Attendance Requests' },
+  { key: 'requests', label: 'Regularization' },
 ]
 
 function useLiveClock() {
