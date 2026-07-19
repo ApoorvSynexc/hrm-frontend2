@@ -40,3 +40,6 @@ export { ToggleButton } from './ToggleButton'
 export type { ToggleButtonProps, ToggleButtonSize } from './ToggleButton'
 
 export { ComingSoon } from './ComingSoon'
+
+export { RangeCalendar } from './RangeCalendar'
+export type { RangeCalendarProps } from './RangeCalendar'
