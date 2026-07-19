@@ -1,10 +1,15 @@
 import Joi from 'joi'
 
+/**
+ * `date` is picked via the calendar in the modal (not typed in), and
+ * checkInTime/checkOutTime are HH:mm — combined with `date` into full
+ * ISO datetimes right before calling the API (see manage/index.tsx).
+ */
 export type RegularizationFormValues = {
   date: string
   dayPart: 'FIRST_HALF' | 'SECOND_HALF' | 'FULL_DAY'
-  requestedCheckIn: string
-  requestedCheckOut: string
+  checkInTime: string
+  checkOutTime: string
   reason: string
 }
 
@@ -18,10 +23,10 @@ export const regularizationSchema = Joi.object<RegularizationFormValues>({
     'string.empty': 'Date is required',
   }),
   dayPart: Joi.string().valid('FIRST_HALF', 'SECOND_HALF', 'FULL_DAY').required(),
-  requestedCheckIn: Joi.string().required().messages({
+  checkInTime: Joi.string().required().messages({
     'string.empty': 'Requested check-in time is required',
   }),
-  requestedCheckOut: Joi.string().required().messages({
+  checkOutTime: Joi.string().required().messages({
     'string.empty': 'Requested check-out time is required',
   }),
   reason: Joi.string().max(500).required().messages({

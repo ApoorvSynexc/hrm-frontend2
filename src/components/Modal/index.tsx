@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import { FiX } from 'react-icons/fi'
 import { Typography } from '../Typography'
 
-export type ModalSize = 'md' | 'lg' | 'xl'
+export type ModalSize = 'md' | 'lg' | 'xl' | '2xl'
 
 export type ModalProps = {
   open: boolean
@@ -19,6 +19,7 @@ const SIZE_CLASS: Record<ModalSize, string> = {
   md: 'max-w-md',
   lg: 'max-w-2xl',
   xl: 'max-w-4xl',
+  '2xl': 'max-w-6xl',
 }
 
 export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
