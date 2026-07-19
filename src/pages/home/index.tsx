@@ -62,15 +62,15 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 px-8 py-10">
+    <div className="flex h-full min-h-0 flex-col gap-5">
+      <div className="shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 px-8 py-10">
         <Typography variant="h2" className="!text-white">
           Welcome back{fullName ? `, ${fullName}` : ''}!
         </Typography>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="flex flex-col gap-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
           <div className="flex items-center justify-between">
             <Typography variant="h5">Quick Access</Typography>
             <button
@@ -207,7 +207,7 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="flex flex-col gap-4 lg:col-span-2">
+        <div className="flex min-h-0 flex-col gap-4 overflow-y-auto lg:col-span-2">
           <Tabs
             items={ORG_TABS}
             active={orgTab}
