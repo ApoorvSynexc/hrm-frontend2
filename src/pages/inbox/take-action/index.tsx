@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { FiCheck, FiInbox, FiX } from 'react-icons/fi'
 import { Avatar, Button, Typography } from '../../../components'
 import { getErrorMessage } from '../../../lib'
@@ -7,42 +7,51 @@ import { fromNow } from '../../../utils/date'
 import { MODULE_META, requestSummary } from '../common'
 import RejectRequestModal from './manage'
 
-/** One large page — the inbox is grouped client-side by module. */
+/**
+ * HOLIDAY exists on ApprovalModule but is never actually enriched/inboxed
+ * (see services/approval-request/types), so it's excluded from the tabs.
+ */
+type InboxModule = Exclude<ApprovalModule, 'HOLIDAY'>
+type ActiveModule = 'ALL' | InboxModule
+
 const FETCH_LIMIT = 100
+const MODULE_ORDER: InboxModule[] = ['LEAVE', 'REGULARIZATION', 'WFH']
 
 export default function TakeAction() {
-  const [activeModule, setActiveModule] = useState<'ALL' | ApprovalModule>('ALL')
+  const [activeModule, setActiveModule] = useState<ActiveModule>('ALL')
   const [rejectTarget, setRejectTarget] = useState<PendingApproval | null>(null)
   const [actingId, setActingId] = useState<string | null>(null)
 
-  const { getPendingApprovals, approveRequest, rejectRequest } = useApprovalRequest({
-    listParams: { page: 1, limit: FETCH_LIMIT },
+  // Mutations only — independent of any listParams, so no module filter needed here.
+  const { approveRequest, rejectRequest } = useApprovalRequest()
+
+  // One query, keyed on the active tab: `module` is omitted for "ALL" (server
+  // returns everything unfiltered) and set otherwise. Switching tabs changes
+  // the query key, and staleTime: 0 on this hook guarantees a live refetch
+  // every time — even when flipping back to a tab visited moments ago.
+  const { getPendingApprovals } = useApprovalRequest({
+    listParams: {
+      page: 1,
+      limit: FETCH_LIMIT,
+      module: activeModule === 'ALL' ? undefined : activeModule,
+    },
   })
 
-  const approvals = useMemo(() => getPendingApprovals.data?.approvals ?? [], [getPendingApprovals.data])
-
-  const countsByModule = useMemo(() => {
-    const counts = new Map<ApprovalModule, number>()
-    approvals.forEach((a) => counts.set(a.instance.module, (counts.get(a.instance.module) ?? 0) + 1))
-    return counts
-  }, [approvals])
-
-  const visibleApprovals =
-    activeModule === 'ALL' ? approvals : approvals.filter((a) => a.instance.module === activeModule)
+  const isLoading = getPendingApprovals.isLoading
+  const visibleApprovals = getPendingApprovals.data?.approvals ?? []
 
   const handleApprove = (approval: PendingApproval) => {
     setActingId(approval.id)
     approveRequest.mutate({ stepInstanceId: approval.id }, { onSettled: () => setActingId(null) })
   }
 
-  const categories: { key: 'ALL' | ApprovalModule; label: string; icon: React.ReactNode; count: number }[] = [
-    { key: 'ALL', label: 'All Pending', icon: <FiInbox size={16} />, count: approvals.length },
-    ...([...countsByModule.entries()].map(([module, count]) => ({
+  const categories: { key: ActiveModule; label: string; icon: React.ReactNode }[] = [
+    { key: 'ALL', label: 'All Pending', icon: <FiInbox size={16} /> },
+    ...MODULE_ORDER.map((module) => ({
       key: module,
       label: MODULE_META[module].label,
       icon: MODULE_META[module].icon,
-      count,
-    })) as { key: ApprovalModule; label: string; icon: React.ReactNode; count: number }[]),
+    })),
   ]
 
   return (
@@ -52,7 +61,7 @@ export default function TakeAction() {
           Pending Tasks
         </Typography>
         <ul className="space-y-1">
-          {categories.map(({ key, label, icon, count }) => (
+          {categories.map(({ key, label, icon }) => (
             <li key={key}>
               <button
                 type="button"
@@ -65,7 +74,6 @@ export default function TakeAction() {
               >
                 {icon}
                 <span className="min-w-0 flex-1 truncate">{label}</span>
-                <span className="text-xs text-body">({count})</span>
               </button>
             </li>
           ))}
@@ -81,7 +89,7 @@ export default function TakeAction() {
           </div>
         )}
 
-        {getPendingApprovals.isLoading ? (
+        {isLoading ? (
           <div className="flex flex-col gap-2 p-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-16 w-full animate-pulse rounded-lg bg-surface-2" />

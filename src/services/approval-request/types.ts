@@ -62,6 +62,17 @@ export type PendingApprovalMeta = {
   totalPages: number
 }
 
+/**
+ * GET /v1/approval-request/pending — `module` filters server-side
+ * (case-insensitive, upper-cased before matching) when provided; omit it to
+ * get pending approvals across every module.
+ */
+export type PendingApprovalListParams = {
+  page: number
+  limit: number
+  module?: ApprovalModule
+}
+
 /** POST /v1/approval-request/approve */
 export type ApproveRequestInput = {
   stepInstanceId: string
