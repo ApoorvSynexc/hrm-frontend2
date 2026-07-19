@@ -5,6 +5,7 @@ import type {
   PendingApproval,
   PendingApprovalListParams,
   PendingApprovalMeta,
+  PendingApprovalsCount,
   RejectRequestInput,
 } from './types'
 
@@ -16,6 +17,7 @@ export type {
   PendingApproval,
   PendingApprovalMeta,
   PendingApprovalListParams,
+  PendingApprovalsCount,
   ApproveRequestInput,
   RejectRequestInput,
 } from './types'
@@ -23,6 +25,24 @@ export type {
 export const approvalRequestKeys = {
   all: ['approval-request'] as const,
   pending: (params: PendingApprovalListParams) => [...approvalRequestKeys.all, 'pending', params] as const,
+  pendingCount: ['approval-request', 'pending-count'] as const,
+}
+
+/**
+ * GET /v1/approval-request/pending/count — dedicated lightweight count used
+ * for the Sidebar/Inbox tab badges, instead of fetching a full (if capped)
+ * pending list just to read meta.totalRecords.
+ */
+export function usePendingApprovalsCount() {
+  const http = useHttpClient()
+  return useQuery({
+    queryKey: approvalRequestKeys.pendingCount,
+    queryFn: async () => {
+      const res = await http.get<PendingApprovalsCount>('/v1/approval-request/pending/count')
+      return res.data.count
+    },
+    staleTime: 0,
+  })
 }
 
 type UseApprovalRequestOptions = {

@@ -9,7 +9,7 @@ import {
   FiUser,
   FiUsers,
 } from 'react-icons/fi'
-import { useApprovalRequest } from '../../services'
+import { usePendingApprovalsCount } from '../../services'
 
 type IconComponent = ComponentType<{ size?: number }>
 
@@ -36,9 +36,7 @@ type SidebarProps = {
 }
 
 export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
-  // Minimal fetch — only the meta.totalRecords count is used for the badge.
-  const { getPendingApprovals } = useApprovalRequest({ listParams: { page: 1, limit: 1 } })
-  const pendingCount = getPendingApprovals.data?.meta.totalRecords ?? 0
+  const { data: pendingCount = 0 } = usePendingApprovalsCount()
 
   return (
     <aside

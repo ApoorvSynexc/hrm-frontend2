@@ -73,6 +73,14 @@ export type PendingApprovalListParams = {
   module?: ApprovalModule
 }
 
+/**
+ * GET /v1/approval-request/pending/count — total pending approvals across
+ * every module for the logged-in approver (no module filter supported).
+ */
+export type PendingApprovalsCount = {
+  count: number
+}
+
 /** POST /v1/approval-request/approve */
 export type ApproveRequestInput = {
   stepInstanceId: string
