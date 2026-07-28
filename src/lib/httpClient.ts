@@ -83,6 +83,10 @@ export function createHttpClient(options: CreateHttpClientOptions = {}): HttpCli
     isRetry = false,
   ): Promise<ApiResponse<T>> {
     const { body, headers, ...rest } = requestOptions
+    // FormData (file uploads) must go through as-is — JSON.stringify-ing it
+    // would send "[object FormData]", and the browser needs to set its own
+    // multipart/form-data boundary, so no Content-Type header is set here.
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
 
     const res = await fetch(`${BASE_URL}${path}`, {
       ...rest,
@@ -91,10 +95,10 @@ export function createHttpClient(options: CreateHttpClientOptions = {}): HttpCli
       // API origin (e.g. localhost:3001) differs from the app's origin.
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...headers,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
     })
 
     const contentType = res.headers.get('content-type') ?? ''

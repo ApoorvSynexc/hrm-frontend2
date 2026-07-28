@@ -5,6 +5,7 @@ import {
   FiCalendar,
   FiClipboard,
   FiClock,
+  FiFile,
   FiFileText,
   FiGitBranch,
   FiGrid,
@@ -23,6 +24,7 @@ import WorkSchedulePolicy from './work-schedule-policy'
 import RequestPolicy from './request-policy'
 import HolidayConfiguration from './holiday-configuration'
 import ApprovalWorkflow from './approval-workflow'
+import DocumentPolicy from './document-policy'
 
 type IconComponent = ComponentType<{ size?: number }>
 
@@ -68,6 +70,10 @@ const MODULE_GROUPS: ModuleGroup[] = [
       { key: 'approval-workflow', label: 'Approval Workflow', icon: FiGitBranch },
     ],
   },
+  {
+    label: 'Documents',
+    items: [{ key: 'document-policy', label: 'Document Policy', icon: FiFile }],
+  },
 ]
 
 const MODULE_COMPONENTS: Record<string, ComponentType> = {
@@ -80,6 +86,7 @@ const MODULE_COMPONENTS: Record<string, ComponentType> = {
   'work-schedule-policy': WorkSchedulePolicy,
   'request-policy': RequestPolicy,
   'holiday-configuration': HolidayConfiguration,
+  'document-policy': DocumentPolicy,
   'approval-workflow': ApprovalWorkflow,
 }
 
