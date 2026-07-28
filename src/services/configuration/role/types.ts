@@ -4,12 +4,15 @@ export type Role = {
   tenantId: string
   name: string
   description: string | null
+  type: RoleType
   isSystem: boolean
   status: RoleStatus
   createdAt: string
   updatedAt: string
   deletedAt: string | null
 }
+
+export type RoleType = 'SUPER_ADMIN' | 'ADMIN' | 'USER'
 
 /** Backend joi: status must be ACTIVE | INACTIVE | DELETED. */
 export type RoleStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED'

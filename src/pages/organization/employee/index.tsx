@@ -29,8 +29,11 @@ export default function OrganizationEmployee() {
     setManageOpen(true)
   }
 
+  const isUndeletable = (employee: Employee) =>
+    employee.id === user?.id || employee.role?.type === 'ADMIN' || employee.role?.type === 'SUPER_ADMIN'
+
   const confirmDelete = () => {
-    if (!deleteTarget || deleteTarget.id === user?.id) return
+    if (!deleteTarget || isUndeletable(deleteTarget)) return
     deleteEmployee.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
   }
 
@@ -100,6 +103,12 @@ export default function OrganizationEmployee() {
       width: '110px',
       render: (row) => {
         const isSelf = row.id === user?.id
+        const isProtectedRole = row.role?.type === 'ADMIN' || row.role?.type === 'SUPER_ADMIN'
+        const blockedReason = isSelf
+          ? "You can't delete your own account"
+          : isProtectedRole
+            ? "Admin and Super Admin accounts can't be deleted"
+            : undefined
         return (
           <div className="flex justify-end gap-1">
             <button
@@ -113,8 +122,8 @@ export default function OrganizationEmployee() {
             <button
               type="button"
               aria-label={`Delete ${row.firstName} ${row.lastName}`}
-              title={isSelf ? "You can't delete your own account" : undefined}
-              disabled={isSelf}
+              title={blockedReason}
+              disabled={Boolean(blockedReason)}
               onClick={() => setDeleteTarget(row)}
               className="rounded-lg p-2 text-body transition-colors hover:bg-surface-2 hover:text-red-500 disabled:pointer-events-none disabled:opacity-30"
             >

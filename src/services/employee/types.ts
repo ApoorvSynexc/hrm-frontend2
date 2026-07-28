@@ -17,7 +17,7 @@ export type Employee = {
   updatedAt: string
   deletedAt: string | null
   /** Populated on list/detail via Prisma `include`. */
-  role?: { id: string; name: string } | null
+  role?: { id: string; name: string; type: 'SUPER_ADMIN' | 'ADMIN' | 'USER' } | null
   department?: { id: string; name: string } | null
   designation?: { id: string; name: string } | null
   reportingManager?: { id: string; firstName: string; lastName: string } | null

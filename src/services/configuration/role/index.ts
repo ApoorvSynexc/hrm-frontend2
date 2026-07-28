@@ -10,6 +10,7 @@ import type {
 
 export type {
   Role,
+  RoleType,
   RoleStatus,
   CreateRoleInput,
   UpdateRoleInput,
