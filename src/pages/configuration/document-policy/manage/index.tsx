@@ -5,6 +5,7 @@ import { joiResolver } from '@hookform/resolvers/joi'
 import { Button, Modal, TextField, Typography } from '../../../../components'
 import { getErrorMessage } from '../../../../lib'
 import { useDocumentPolicy, type DocumentPolicy } from '../../../../services'
+import { buildMediaUrl } from '../../../../utils/helper'
 import { documentPolicySchema, type DocumentPolicyFormValues } from './validations'
 
 /** "2.3 MB" / "512 B" — used only for the picked-file summary below. */
@@ -76,8 +77,11 @@ export default function ManageDocumentPolicyModal({
     uploadFile.mutate(file, {
       onSuccess: (uploaded) => {
         setValue(
+          // `url` here is the S3 key (see MediaInput) — the actual base URL
+          // is only known client-side via VITE_MEDIA_BASE_URL, applied at
+          // display time through buildMediaUrl.
           'media',
-          { name: file.name, size: uploaded.sizeInBytes, url: uploaded.url, mimetype: uploaded.contentType },
+          { name: file.name, size: uploaded.sizeInBytes, url: uploaded.key, mimetype: uploaded.contentType },
           { shouldValidate: true },
         )
       },
@@ -163,7 +167,7 @@ export default function ManageDocumentPolicyModal({
           {media ? (
             <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2.5">
               <a
-                href={media.url}
+                href={buildMediaUrl(media.url)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex min-w-0 items-center gap-2 text-sm text-heading hover:underline"

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FiEdit2, FiFile, FiPlus, FiTrash2 } from 'react-icons/fi'
 import { Button, ConfirmDialog, Table, ToggleButton, type TableColumn } from '../../../components'
 import { useDocumentPolicy, type DocumentPolicy } from '../../../services'
+import { buildMediaUrl } from '../../../utils/helper'
 import { ModuleHeader } from '../common'
 import ManageDocumentPolicyModal from './manage'
 
@@ -66,7 +67,7 @@ export default function DocumentPolicyModule() {
       header: 'File',
       render: (row) => (
         <a
-          href={row.media.url}
+          href={buildMediaUrl(row.media.url)}
           target="_blank"
           rel="noreferrer"
           className="flex min-w-0 items-center gap-1.5 text-body transition-colors hover:text-accent"

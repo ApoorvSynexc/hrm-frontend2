@@ -1,7 +1,12 @@
 /** Backend joi: status must be ACTIVE | INACTIVE | DELETED. */
 export type DocumentPolicyStatus = 'ACTIVE' | 'INACTIVE' | 'DELETED'
 
-/** Mirrors backend Prisma `Media` — always populated via `include: { media: true }`. */
+/**
+ * Mirrors backend Prisma `Media` — always populated via `include: { media: true }`.
+ * `url` holds only the S3 *key* (e.g. "uploads/xxx_object.jpg"), not a full
+ * URL — pass it through `buildMediaUrl` (utils/helper) before using it as an
+ * href, since the actual bucket/CDN host is only known via VITE_MEDIA_BASE_URL.
+ */
 export type Media = {
   id: string
   userId: string
@@ -34,7 +39,9 @@ export type DocumentPolicy = {
 /**
  * The backend's document-policy Joi schema takes the file's metadata inline
  * (not a mediaId FK) — the controller creates the Media row itself from
- * this object. Comes straight from an UploadedFile (see below).
+ * this object. Built from an UploadedFile's `key` (not `url` — see
+ * useDocumentPolicy's uploadFile), so despite the field being named `url`
+ * to match the backend contract, it must be an S3 key.
  */
 export type MediaInput = {
   name: string
