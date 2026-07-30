@@ -4,8 +4,11 @@ import { FiBell, FiChevronDown, FiHelpCircle, FiSearch } from 'react-icons/fi'
 import { Avatar } from '../../components'
 import { PalettePicker, ThemeToggle } from '../../theme'
 import { useSession } from '../../hooks'
-import { useAuth } from '../../services'
+import { useAuth, useNotification } from '../../services'
+import { NotificationMenu } from './NotificationMenu'
 import { UserMenu } from './UserMenu'
+
+const NOTIFICATION_FETCH_LIMIT = 20
 
 const PAGE_TITLES: Record<string, string> = {
   '/home': 'Dashboard',
@@ -20,10 +23,36 @@ export function Navbar() {
   const { logout } = useAuth()
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [markingId, setMarkingId] = useState<string | null>(null)
+  const [markingAllRead, setMarkingAllRead] = useState(false)
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : undefined
   const pageTitle = pathname.startsWith('/configuration')
     ? PAGE_TITLES['/configuration']
     : (PAGE_TITLES[pathname] ?? 'Dashboard')
+
+  const { getNotifications, updateNotification } = useNotification({
+    listParams: { page: 1, limit: NOTIFICATION_FETCH_LIMIT },
+  })
+  const notifications = getNotifications.data?.notifications ?? []
+  const hasUnread = notifications.some((n) => n.status === 'UNREAD')
+
+  const markRead = (notification: { id: string }) => {
+    setMarkingId(notification.id)
+    updateNotification.mutate(
+      { id: notification.id, status: 'READ' },
+      { onSettled: () => setMarkingId(null) },
+    )
+  }
+
+  const markAllRead = () => {
+    const unread = notifications.filter((n) => n.status === 'UNREAD')
+    if (unread.length === 0) return
+    setMarkingAllRead(true)
+    Promise.allSettled(
+      unread.map((n) => updateNotification.mutateAsync({ id: n.id, status: 'READ' })),
+    ).finally(() => setMarkingAllRead(false))
+  }
 
   return (
     <header className="flex h-16 items-center gap-6 border-b border-border bg-surface px-6">
@@ -49,14 +78,38 @@ export function Navbar() {
         <PalettePicker />
         <ThemeToggle />
         <div className="mx-1 h-6 w-px bg-border" />
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-9 w-9 items-center justify-center rounded-lg text-body transition-colors hover:bg-surface-2 hover:text-heading"
-        >
-          <FiBell size={18} />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="Notifications"
+            onClick={() => setNotificationsOpen((v) => !v)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-body transition-colors hover:bg-surface-2 hover:text-heading"
+          >
+            <FiBell size={18} />
+            {hasUnread && (
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            )}
+          </button>
+
+          {notificationsOpen && (
+            <>
+              <button
+                type="button"
+                aria-label="Close notifications"
+                onClick={() => setNotificationsOpen(false)}
+                className="fixed inset-0 z-10 cursor-default"
+              />
+              <NotificationMenu
+                notifications={notifications}
+                isLoading={getNotifications.isLoading}
+                markingId={markingId}
+                markingAllRead={markingAllRead}
+                onMarkRead={markRead}
+                onMarkAllRead={markAllRead}
+              />
+            </>
+          )}
+        </div>
         <button
           type="button"
           aria-label="Help"
