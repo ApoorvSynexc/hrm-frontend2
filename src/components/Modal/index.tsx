@@ -11,6 +11,8 @@ export type ModalProps = {
   children: ReactNode
   /** Rendered right-aligned below the body — usually action buttons. */
   footer?: ReactNode
+  /** Rendered in the header, between the title and the close button — e.g. year navigation. */
+  headerExtra?: ReactNode
   /** Controls max-width. Defaults to 'md' (max-w-md) for compact forms. */
   size?: ModalSize
 }
@@ -22,7 +24,7 @@ const SIZE_CLASS: Record<ModalSize, string> = {
   '2xl': 'max-w-6xl',
 }
 
-export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
+export function Modal({ open, onClose, title, children, footer, headerExtra, size = 'md' }: ModalProps) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
@@ -49,7 +51,10 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
         className={`relative z-10 flex max-h-[90vh] w-full flex-col rounded-xl border border-border bg-surface shadow-lg ${SIZE_CLASS[size]}`}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
-          <Typography variant="h6">{title}</Typography>
+          <div className="flex items-center gap-3">
+            <Typography variant="h6">{title}</Typography>
+            {headerExtra}
+          </div>
           <button
             type="button"
             aria-label="Close"

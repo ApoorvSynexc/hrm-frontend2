@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   FiAward,
   FiBarChart2,
@@ -15,8 +15,9 @@ import {
 import { Button, Card, Tabs, Typography } from '../../components'
 import { useSession } from '../../hooks'
 import { getErrorMessage } from '../../lib'
-import { useAttendance } from '../../services'
-import { dayjs, formatMinutes } from '../../utils/date'
+import { useAttendance, useHoliday } from '../../services'
+import { dayjs, formatDate, formatMinutes, toISODate } from '../../utils/date'
+import { HolidayListModal } from './HolidayListModal'
 
 const ORG_TABS = [
   { key: 'organization', label: 'Organization' },
@@ -47,10 +48,24 @@ export default function Home() {
   const [composerTab, setComposerTab] = useState('post')
   const [clockInMode, setClockInMode] = useState(CLOCK_IN_MODES[0])
   const [clockInMenuOpen, setClockInMenuOpen] = useState(false)
+  const [holidayIndex, setHolidayIndex] = useState(0)
+  const [holidaysOpen, setHolidaysOpen] = useState(false)
 
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
 
   const { getToday, checkIn, checkOut } = useAttendance()
+  const { getHolidays } = useHoliday({ listParams: { page: 1, limit: 100 } })
+
+  const allHolidays = useMemo(
+    () => [...(getHolidays.data?.holidays ?? [])].sort((a, b) => a.date.localeCompare(b.date)),
+    [getHolidays.data],
+  )
+  const upcomingHolidays = useMemo(() => {
+    const todayISO = toISODate()
+    return allHolidays.filter((h) => h.status === 'ACTIVE' && h.date.slice(0, 10) >= todayISO)
+  }, [allHolidays])
+  const currentHolidayIndex = Math.min(holidayIndex, Math.max(upcomingHolidays.length - 1, 0))
+  const currentHoliday = upcomingHolidays[currentHolidayIndex]
   const today = getToday.data
   const hasStartedToday = Boolean(today && 'id' in today)
   const isInSession = hasStartedToday && 'summary' in today! && today.summary.currentStatus === 'IN_SESSION'
@@ -60,6 +75,9 @@ export default function Home() {
   const handleCheckOut = () => {
     if (today && 'id' in today) checkOut.mutate({ id: today.id, checkOutMethod: 'WEB' })
   }
+
+  const goPrevHoliday = () => setHolidayIndex((i) => Math.max(0, i - 1))
+  const goNextHoliday = () => setHolidayIndex((i) => Math.min(upcomingHolidays.length - 1, i + 1))
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
@@ -169,31 +187,47 @@ export default function Home() {
           <Card
             title="Holidays"
             action={
-              <button type="button" className="text-xs font-medium text-accent hover:underline">
+              <button
+                type="button"
+                onClick={() => setHolidaysOpen(true)}
+                className="text-xs font-medium text-accent hover:underline"
+              >
                 View All
               </button>
             }
           >
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                aria-label="Previous holiday"
-                className="rounded-full p-1.5 text-body hover:bg-surface-2 hover:text-heading"
-              >
-                <FiChevronLeft size={16} />
-              </button>
-              <div className="text-center">
-                <p className="text-lg font-semibold text-accent">Labor Day</p>
-                <p className="mt-0.5 text-xs text-body">Mon, 01 September, 2025</p>
+            {getHolidays.isLoading ? (
+              <div className="h-12 w-full animate-pulse rounded-lg bg-surface-2" />
+            ) : upcomingHolidays.length === 0 ? (
+              <Typography variant="body-sm" color="body" className="py-2 text-center">
+                No upcoming holidays.
+              </Typography>
+            ) : (
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  aria-label="Previous holiday"
+                  onClick={goPrevHoliday}
+                  disabled={currentHolidayIndex === 0}
+                  className="rounded-full p-1.5 text-body transition-colors hover:bg-surface-2 hover:text-heading disabled:pointer-events-none disabled:opacity-30"
+                >
+                  <FiChevronLeft size={16} />
+                </button>
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-accent">{currentHoliday.name}</p>
+                  <p className="mt-0.5 text-xs text-body">{formatDate(currentHoliday.date)}</p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Next holiday"
+                  onClick={goNextHoliday}
+                  disabled={currentHolidayIndex === upcomingHolidays.length - 1}
+                  className="rounded-full p-1.5 text-body transition-colors hover:bg-surface-2 hover:text-heading disabled:pointer-events-none disabled:opacity-30"
+                >
+                  <FiChevronRight size={16} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label="Next holiday"
-                className="rounded-full p-1.5 text-body hover:bg-surface-2 hover:text-heading"
-              >
-                <FiChevronRight size={16} />
-              </button>
-            </div>
+            )}
           </Card>
 
           <Card title="On Leave Today">
@@ -278,6 +312,13 @@ export default function Home() {
           </Card>
         </div>
       </div>
+
+      <HolidayListModal
+        open={holidaysOpen}
+        onClose={() => setHolidaysOpen(false)}
+        holidays={allHolidays}
+        loading={getHolidays.isLoading}
+      />
     </div>
   )
 }
