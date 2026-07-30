@@ -122,3 +122,18 @@ export type AttendanceListParams = {
   endDate?: string
   status?: AttendanceStatus
 }
+
+/**
+ * GET /v1/attendance/weekly-stats — no params; always the current week
+ * (backend computes startOf('week')/endOf('week') itself) for the
+ * logged-in user.
+ */
+export type WeeklyStats = {
+  startDate: string
+  endDate: string
+  avgHoursPerDay: { hours: number; minutes: number }
+  onTimeArrivalPercentage: number
+  daysWithCheckIn: number
+  onTimeDays: number
+  lateDays: number
+}

@@ -8,6 +8,7 @@ import type {
   CheckOutInput,
   MonthlyAttendance,
   TodayAttendance,
+  WeeklyStats,
 } from './types'
 
 export type {
@@ -22,6 +23,7 @@ export type {
   MonthlyAttendance,
   MonthlyCalendarDay,
   MonthlySummary,
+  WeeklyStats,
 } from './types'
 
 export const attendanceKeys = {
@@ -29,6 +31,7 @@ export const attendanceKeys = {
   today: () => [...attendanceKeys.all, 'today'] as const,
   list: (params: AttendanceListParams) => [...attendanceKeys.all, 'list', params] as const,
   monthly: (year: number, month: number) => [...attendanceKeys.all, 'monthly', year, month] as const,
+  weeklyStats: () => [...attendanceKeys.all, 'weekly-stats'] as const,
 }
 
 type UseAttendanceOptions = {
@@ -81,6 +84,14 @@ export function useAttendance({ listParams, monthlyParams }: UseAttendanceOption
     enabled: Boolean(monthlyParams),
   })
 
+  const getWeeklyStats = useQuery({
+    queryKey: attendanceKeys.weeklyStats(),
+    queryFn: async () => {
+      const res = await http.get<WeeklyStats>('/v1/attendance/weekly-stats')
+      return res.data
+    },
+  })
+
   const checkIn = useMutation({
     mutationFn: async (input: CheckInInput) => {
       const res = await http.post<Attendance>('/v1/attendance/checkin', input)
@@ -101,6 +112,7 @@ export function useAttendance({ listParams, monthlyParams }: UseAttendanceOption
     getToday,
     getAttendanceList,
     getMonthly,
+    getWeeklyStats,
     checkIn,
     checkOut,
   }

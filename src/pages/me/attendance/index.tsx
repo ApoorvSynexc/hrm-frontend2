@@ -40,7 +40,7 @@ export default function Attendance() {
     return Array.from({ length: 7 }, (_, i) => start.add(i, 'day'))
   }, [])
 
-  const { getToday, getAttendanceList, checkIn, checkOut } = useAttendance({
+  const { getToday, getAttendanceList, getWeeklyStats, checkIn, checkOut } = useAttendance({
     listParams: { page, limit: PAGE_SIZE },
   })
   const { getAttendanceList: getWeekList } = useAttendance({
@@ -59,13 +59,10 @@ export default function Attendance() {
     weekRecords.forEach((r) => map.set(toISODate(r.date), r))
     return map
   }, [weekRecords])
-  const presentDays = weekRecords.filter((r) => r.totalMinutes)
-  const avgMinutes = presentDays.length
-    ? Math.round(presentDays.reduce((sum, r) => sum + (r.totalMinutes ?? 0), 0) / presentDays.length)
-    : 0
-  const onTimePct = presentDays.length
-    ? Math.round((presentDays.filter((r) => !r.isLate).length / presentDays.length) * 100)
-    : 0
+
+  const weeklyStats = getWeeklyStats.data
+  const avgMinutes = weeklyStats ? weeklyStats.avgHoursPerDay.hours * 60 + weeklyStats.avgHoursPerDay.minutes : 0
+  const onTimePct = weeklyStats?.onTimeArrivalPercentage ?? 0
 
   const handleCheckIn = () => checkIn.mutate({ checkInMethod: 'WEB' })
   const handleCheckOut = () => {
