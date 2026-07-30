@@ -85,7 +85,7 @@ export function HolidayListModal({ open, onClose, holidays, loading }: HolidayLi
           No holidays recorded for {year}.
         </Typography>
       ) : (
-        <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+        <div className="grid h-[420px] grid-cols-1 content-start gap-x-8 gap-y-4 overflow-y-auto sm:grid-cols-2">
           <div className="flex flex-col gap-4">
             {leftColumn.map((holiday) => (
               <HolidayRow key={holiday.id} holiday={holiday} />
