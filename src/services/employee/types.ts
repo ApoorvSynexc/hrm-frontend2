@@ -73,3 +73,66 @@ export type EmployeeListParams = {
   page: number
   limit: number
 }
+
+/** Backend joi: dayPart must be FIRST_HALF | SECOND_HALF | FULL_DAY. */
+export type TeamDayPart = 'FIRST_HALF' | 'SECOND_HALF' | 'FULL_DAY'
+
+export type TeamMemberProfile = {
+  id: string
+  name: string
+  url: string
+  mimetype: string
+  thumbnailUrl: string | null
+}
+
+/** The subset of employee fields the my-team/leave-wfh-today endpoint attaches to each entry. */
+export type TeamMemberSummary = {
+  id: string
+  firstName: string
+  lastName: string
+  employeeCode: string | null
+  profile: TeamMemberProfile | null
+}
+
+/**
+ * GET /v1/employee/my-team/leave-wfh-today — "my team" means employees
+ * whose reportingManagerId is the logged-in user (direct reports only, not
+ * the whole org). The backend pre-filters to APPROVED requests whose
+ * [startDate, endDate] window covers today in the tenant's timezone, so
+ * `status` is always APPROVED here.
+ */
+export type TeamLeaveToday = {
+  id: string
+  userId: string
+  leaveTypeId: string
+  status: 'APPROVED'
+  startDate: string
+  endDate: string
+  startDateDayPart: TeamDayPart
+  endDateDayPart: TeamDayPart
+  amount: number
+  reason: string | null
+  createdAt: string
+  updatedAt: string
+  employee: TeamMemberSummary
+}
+
+export type TeamWfhToday = {
+  id: string
+  userId: string
+  status: 'APPROVED'
+  startDate: string
+  endDate: string
+  startDateDayPart: TeamDayPart
+  endDateDayPart: TeamDayPart
+  amount: number
+  reason: string | null
+  createdAt: string
+  updatedAt: string
+  employee: TeamMemberSummary
+}
+
+export type TeamLeaveAndWfhToday = {
+  leaves: TeamLeaveToday[]
+  workFromHomes: TeamWfhToday[]
+}

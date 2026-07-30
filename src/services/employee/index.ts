@@ -5,6 +5,7 @@ import type {
   Employee,
   EmployeeListMeta,
   EmployeeListParams,
+  TeamLeaveAndWfhToday,
   UpdateEmployeeInput,
 } from './types'
 
@@ -15,12 +16,19 @@ export type {
   UpdateEmployeeInput,
   EmployeeListMeta,
   EmployeeListParams,
+  TeamDayPart,
+  TeamMemberProfile,
+  TeamMemberSummary,
+  TeamLeaveToday,
+  TeamWfhToday,
+  TeamLeaveAndWfhToday,
 } from './types'
 
 export const employeeKeys = {
   all: ['employee'] as const,
   list: (params: EmployeeListParams) => [...employeeKeys.all, 'list', params] as const,
   detail: (id: string) => [...employeeKeys.all, 'detail', id] as const,
+  teamLeaveAndWfhToday: () => [...employeeKeys.all, 'team-leave-wfh-today'] as const,
 }
 
 type UseEmployeeOptions = {
@@ -59,6 +67,14 @@ export function useEmployee({ listParams, employeeId }: UseEmployeeOptions = {})
     enabled: Boolean(employeeId),
   })
 
+  const getTeamLeaveAndWfhToday = useQuery({
+    queryKey: employeeKeys.teamLeaveAndWfhToday(),
+    queryFn: async () => {
+      const res = await http.get<TeamLeaveAndWfhToday>('/v1/employee/my-team/leave-wfh-today')
+      return res.data
+    },
+  })
+
   const createEmployee = useMutation({
     mutationFn: async (input: CreateEmployeeInput) => {
       const res = await http.post<Employee>('/v1/employee', input)
@@ -86,6 +102,7 @@ export function useEmployee({ listParams, employeeId }: UseEmployeeOptions = {})
   return {
     getEmployees,
     getEmployeeDetail,
+    getTeamLeaveAndWfhToday,
     createEmployee,
     updateEmployee,
     deleteEmployee,

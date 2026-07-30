@@ -12,10 +12,10 @@ import {
   FiSettings,
   FiThumbsUp,
 } from 'react-icons/fi'
-import { Button, Card, Tabs, Typography } from '../../components'
+import { Avatar, Button, Card, Tabs, Typography } from '../../components'
 import { useSession } from '../../hooks'
 import { getErrorMessage } from '../../lib'
-import { useAttendance, useHoliday } from '../../services'
+import { useAttendance, useEmployee, useHoliday } from '../../services'
 import { dayjs, formatDate, formatMinutes, toISODate } from '../../utils/date'
 import { HolidayListModal } from './HolidayListModal'
 
@@ -55,6 +55,9 @@ export default function Home() {
 
   const { getToday, checkIn, checkOut } = useAttendance()
   const { getHolidays } = useHoliday({ listParams: { page: 1, limit: 100 } })
+  const { getTeamLeaveAndWfhToday } = useEmployee()
+  const onLeaveToday = getTeamLeaveAndWfhToday.data?.leaves ?? []
+  const workingRemotelyToday = getTeamLeaveAndWfhToday.data?.workFromHomes ?? []
 
   const allHolidays = useMemo(
     () => [...(getHolidays.data?.holidays ?? [])].sort((a, b) => a.date.localeCompare(b.date)),
@@ -231,13 +234,69 @@ export default function Home() {
           </Card>
 
           <Card title="On Leave Today">
-            <p className="text-sm text-body">No one is on leave today.</p>
+            {getTeamLeaveAndWfhToday.isLoading ? (
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="h-8 w-full animate-pulse rounded-lg bg-surface-2" />
+                ))}
+              </div>
+            ) : onLeaveToday.length === 0 ? (
+              <p className="text-sm text-body">No one is on leave today.</p>
+            ) : (
+              <ul className="flex flex-col gap-2.5">
+                {onLeaveToday.map((leave) => (
+                  <li key={leave.id} className="flex items-center gap-2.5">
+                    <Avatar
+                      name={`${leave.employee.firstName} ${leave.employee.lastName}`}
+                      src={leave.employee.profile?.url}
+                      size="sm"
+                    />
+                    <span className="min-w-0 flex-1 truncate text-sm text-heading">
+                      {leave.employee.firstName} {leave.employee.lastName}
+                    </span>
+                    {(leave.startDateDayPart !== 'FULL_DAY' || leave.endDateDayPart !== 'FULL_DAY') && (
+                      <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-body">
+                        Half Day
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
 
           <Card title="Working Remotely">
-            <p className="text-sm text-body">
-              Everyone is at office! No one is working remotely today.
-            </p>
+            {getTeamLeaveAndWfhToday.isLoading ? (
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="h-8 w-full animate-pulse rounded-lg bg-surface-2" />
+                ))}
+              </div>
+            ) : workingRemotelyToday.length === 0 ? (
+              <p className="text-sm text-body">
+                Everyone is at office! No one is working remotely today.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2.5">
+                {workingRemotelyToday.map((wfh) => (
+                  <li key={wfh.id} className="flex items-center gap-2.5">
+                    <Avatar
+                      name={`${wfh.employee.firstName} ${wfh.employee.lastName}`}
+                      src={wfh.employee.profile?.url}
+                      size="sm"
+                    />
+                    <span className="min-w-0 flex-1 truncate text-sm text-heading">
+                      {wfh.employee.firstName} {wfh.employee.lastName}
+                    </span>
+                    {(wfh.startDateDayPart !== 'FULL_DAY' || wfh.endDateDayPart !== 'FULL_DAY') && (
+                      <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-body">
+                        Half Day
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
 
