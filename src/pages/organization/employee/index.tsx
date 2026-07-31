@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi'
-import { Avatar, Button, ConfirmDialog, Table, ToggleButton, type TableColumn } from '../../../components'
+import { Avatar, Button, Card, ConfirmDialog, Table, ToggleButton, type TableColumn } from '../../../components'
 import { useSession } from '../../../hooks'
 import { useEmployee, type Employee } from '../../../services'
 import ManageEmployeeModal from './manage'
@@ -137,24 +137,27 @@ export default function OrganizationEmployee() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-end">
-        <Button size="sm" leftIcon={<FiPlus size={16} />} onClick={openCreate}>
-          Add Employee
-        </Button>
-      </div>
-
-      <Table
-        columns={columns}
-        data={getEmployees.data?.employees ?? []}
-        rowKey={(row) => row.id}
-        loading={getEmployees.isLoading}
-        emptyMessage="No employees added yet."
-        pagination
-        page={page}
-        onPageChange={setPage}
-        pageSize={PAGE_SIZE}
-        totalItems={getEmployees.data?.meta.totalRecords ?? 0}
-      />
+      <Card
+        title="Employees"
+        action={
+          <Button size="sm" leftIcon={<FiPlus size={16} />} onClick={openCreate}>
+            Add Employee
+          </Button>
+        }
+      >
+        <Table
+          columns={columns}
+          data={getEmployees.data?.employees ?? []}
+          rowKey={(row) => row.id}
+          loading={getEmployees.isLoading}
+          emptyMessage="No employees added yet."
+          pagination
+          page={page}
+          onPageChange={setPage}
+          pageSize={PAGE_SIZE}
+          totalItems={getEmployees.data?.meta.totalRecords ?? 0}
+        />
+      </Card>
 
       <ManageEmployeeModal
         open={manageOpen}
