@@ -16,7 +16,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/configuration': 'Configuration',
   '/me': 'Me',
   '/inbox': 'Inbox',
-  '/hr-handbook': 'HR Handbook',
 }
 
 export function Navbar() {

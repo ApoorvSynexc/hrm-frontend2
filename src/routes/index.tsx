@@ -6,7 +6,6 @@ import ConfigurationPage from '../pages/configuration'
 import OrganizationPage from '../pages/organization'
 import MePage from '../pages/me'
 import InboxPage from '../pages/inbox'
-import HrHandbookPage from '../pages/hr-handbook'
 import { ProtectedRoute } from './ProtectedRoute'
 import { PublicRoute } from './PublicRoute'
 import { AppLayout } from '../layout/AppLayout'
@@ -37,7 +36,6 @@ export function AppRoutes() {
         <Route path="/organization" element={<OrganizationPage />} />
         <Route path="/me" element={<MePage />} />
         <Route path="/inbox" element={<InboxPage />} />
-        <Route path="/hr-handbook" element={<HrHandbookPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

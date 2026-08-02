@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiBookOpen, FiLogOut, FiSliders, FiUser } from 'react-icons/fi'
+import { FiLogOut, FiSliders, FiUser } from 'react-icons/fi'
 import { Avatar } from '../../components'
 import type { Profile } from '../../services'
 
@@ -14,10 +14,6 @@ type MenuItem = {
 const ACCOUNT_ITEMS: MenuItem[] = [
   { label: 'My Profile', icon: <FiUser size={16} />, to: '/profile' },
   { label: 'Configurations', icon: <FiSliders size={16} />, to: '/configuration' },
-]
-
-const RESOURCE_ITEMS: MenuItem[] = [
-  { label: 'HR Handbook', icon: <FiBookOpen size={16} />, to: '/hr-handbook' },
 ]
 
 type UserMenuProps = {
@@ -49,8 +45,6 @@ export function UserMenu({ user, fullName, onClose, onSignOut, signingOut }: Use
       </div>
 
       <MenuSection items={ACCOUNT_ITEMS} onItemClick={handleItemClick} />
-      <div className="border-t border-border" />
-      <MenuSection items={RESOURCE_ITEMS} onItemClick={handleItemClick} />
       <div className="border-t border-border" />
 
       <button
