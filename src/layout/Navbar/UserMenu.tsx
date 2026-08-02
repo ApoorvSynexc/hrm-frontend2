@@ -1,14 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  FiBell,
-  FiBookOpen,
-  FiCalendar,
-  FiLogOut,
-  FiShield,
-  FiSliders,
-  FiUser,
-} from 'react-icons/fi'
+import { FiBookOpen, FiLogOut, FiSliders, FiUser } from 'react-icons/fi'
 import { Avatar } from '../../components'
 import type { Profile } from '../../services'
 
@@ -21,15 +13,10 @@ type MenuItem = {
 
 const ACCOUNT_ITEMS: MenuItem[] = [
   { label: 'My Profile', icon: <FiUser size={16} />, to: '/profile' },
-  { label: 'Notifications', icon: <FiBell size={16} /> },
-  { label: 'Security', icon: <FiShield size={16} /> },
   { label: 'Configurations', icon: <FiSliders size={16} />, to: '/configuration' },
 ]
 
-const RESOURCE_ITEMS: MenuItem[] = [
-  { label: 'HR Handbook', icon: <FiBookOpen size={16} /> },
-  { label: 'Holiday Calendar', icon: <FiCalendar size={16} /> },
-]
+const RESOURCE_ITEMS: MenuItem[] = [{ label: 'HR Handbook', icon: <FiBookOpen size={16} /> }]
 
 type UserMenuProps = {
   user: Profile | null
