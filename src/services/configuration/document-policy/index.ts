@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../../hooks'
+import { useFileUpload } from '../../common'
 import type {
   CreateDocumentPolicyInput,
   DocumentPolicy,
   DocumentPolicyListMeta,
   DocumentPolicyListParams,
   UpdateDocumentPolicyInput,
-  UploadedFile,
 } from './types'
 
 export type {
@@ -18,7 +18,6 @@ export type {
   UpdateDocumentPolicyInput,
   DocumentPolicyListMeta,
   DocumentPolicyListParams,
-  UploadedFile,
 } from './types'
 
 export const documentPolicyKeys = {
@@ -63,23 +62,7 @@ export function useDocumentPolicy({ listParams, documentPolicyId }: UseDocumentP
     enabled: Boolean(documentPolicyId),
   })
 
-  /**
-   * POST /v1/common/upload — multipart field name is "files" (a multer
-   * `.array('files', 10)`), even for a single file. Returns raw S3 metadata
-   * only — no DB row/id — so the result is sent as-is under `media` when
-   * creating/updating a document policy (see MediaInput).
-   */
-  const uploadFile = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData()
-      formData.append('files', file)
-      const res = await http.post<{ files: UploadedFile[]; totalFiles: number }>(
-        '/v1/common/upload',
-        formData,
-      )
-      return res.data.files[0]
-    },
-  })
+  const { uploadFile } = useFileUpload()
 
   const createDocumentPolicy = useMutation({
     mutationFn: async (input: CreateDocumentPolicyInput) => {

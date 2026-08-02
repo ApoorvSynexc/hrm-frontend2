@@ -77,16 +77,3 @@ export type DocumentPolicyListParams = {
   page: number
   limit: number
 }
-
-/**
- * One entry of POST /v1/common/upload's response `data.files` — this is
- * purely S3 metadata (no DB row, no id), which is why document-policy takes
- * the file inline as `MediaInput` rather than referencing a mediaId.
- */
-export type UploadedFile = {
-  url: string
-  key: string
-  contentType: string
-  fileName: string
-  sizeInBytes: number
-}

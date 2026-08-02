@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks/useHttpClient'
-import type { Profile } from './types'
+import type { Profile, UpdateAccountInput } from './types'
 
-export type { Profile } from './types'
+export type { Profile, Contact, MobileNumber, Gender, UpdateAccountInput } from './types'
 
 export const accountKeys = {
   all: ['account'] as const,
@@ -11,6 +11,7 @@ export const accountKeys = {
 
 export function useAccount() {
   const http = useHttpClient()
+  const queryClient = useQueryClient()
 
   const myProfile = useQuery({
     queryKey: accountKeys.myProfile(),
@@ -21,5 +22,16 @@ export function useAccount() {
     retry: false,
   })
 
-  return { myProfile }
+  // Invalidating accountKeys.all refetches myProfile, which SessionContext
+  // reads directly — so a successful save updates the Navbar/sidebar/etc.
+  // everywhere `useSession()` is used, not just this page.
+  const updateAccount = useMutation({
+    mutationFn: async (input: UpdateAccountInput) => {
+      const res = await http.put<Profile>('/v1/account/my-profile', input)
+      return res.data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: accountKeys.all }),
+  })
+
+  return { myProfile, updateAccount }
 }
