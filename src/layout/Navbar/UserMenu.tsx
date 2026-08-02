@@ -16,7 +16,9 @@ const ACCOUNT_ITEMS: MenuItem[] = [
   { label: 'Configurations', icon: <FiSliders size={16} />, to: '/configuration' },
 ]
 
-const RESOURCE_ITEMS: MenuItem[] = [{ label: 'HR Handbook', icon: <FiBookOpen size={16} /> }]
+const RESOURCE_ITEMS: MenuItem[] = [
+  { label: 'HR Handbook', icon: <FiBookOpen size={16} />, to: '/hr-handbook' },
+]
 
 type UserMenuProps = {
   user: Profile | null
