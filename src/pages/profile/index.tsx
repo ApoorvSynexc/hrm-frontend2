@@ -36,8 +36,8 @@ export default function ProfilePage() {
   const ActiveTopTab = TOP_TAB_COMPONENTS[topTab] ?? AboutTab
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-xl border border-border bg-surface p-6">
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="shrink-0 rounded-xl border border-border bg-surface p-6">
         <div className="flex items-start gap-4">
           <Avatar name={fullName} src={user?.profile?.url} size="lg" shape="square" />
 
@@ -83,9 +83,11 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <Tabs items={TOP_TABS} active={topTab} onChange={setTopTab} className="pl-5" />
+      <Tabs items={TOP_TABS} active={topTab} onChange={setTopTab} className="shrink-0 pl-5" />
 
-      <ActiveTopTab />
+      <div className="min-h-0 flex-1">
+        <ActiveTopTab />
+      </div>
     </div>
   )
 }
