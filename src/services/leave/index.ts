@@ -10,6 +10,8 @@ export type {
   LeaveListMeta,
   LeaveListParams,
   LeaveBalance,
+  LeaveBalanceLedger,
+  LeaveBalanceLedgerTransactionType,
 } from './types'
 
 export const leaveKeys = {

@@ -54,7 +54,43 @@ export type LeaveListParams = {
   endDate?: string
 }
 
-/** GET /v1/leave/balance/list — one row per leave type for the year. */
+/** Mirrors backend Prisma `TransactionType` enum. */
+export type LeaveBalanceLedgerTransactionType = 'CREDIT' | 'DEBIT' | 'ADJUSTMENT' | 'CARRY_FORWARD'
+
+/**
+ * Mirrors backend Prisma `LeaveBalanceLedger`. `amount` is always a positive
+ * day count regardless of transactionType — CREDIT/DEBIT direction has to be
+ * read from transactionType. A DEBIT row starts status: INACTIVE while its
+ * leave request is pending approval, then flips to ACTIVE on approval or
+ * gets deleted on rejection/withdrawal — so status: 'ACTIVE' is what
+ * actually happened to the balance.
+ */
+export type LeaveBalanceLedger = {
+  id: string
+  tenantId: string
+  userId: string
+  leaveBalanceId: string
+  leaveTypeId: string
+  transactionType: LeaveBalanceLedgerTransactionType
+  amount: number
+  description: string
+  leaveId: string | null
+  balanceBeforeTransaction: number
+  balanceAfterTransaction: number
+  createdBy: string | null
+  reason: string | null
+  remarks: string | null
+  status: 'ACTIVE' | 'INACTIVE' | 'DELETED'
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * GET /v1/leave/balance/list — one row per leave type for the year. `ledger`
+ * is included directly on each row (no separate ledger endpoint) — filter to
+ * status: 'ACTIVE' entries to see finalized balance movements only
+ * (INACTIVE entries are holds for still-pending leave requests).
+ */
 export type LeaveBalance = {
   id: string
   userId: string
@@ -64,4 +100,5 @@ export type LeaveBalance = {
   usedDays: number
   remainingDays: number
   leaveType?: { id: string; name: string } | null
+  ledger: LeaveBalanceLedger[]
 }

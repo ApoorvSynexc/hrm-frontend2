@@ -1,5 +1,4 @@
 import { FiCalendar } from 'react-icons/fi'
-import { useSession } from '../../hooks'
 import { useLeave, useRegularization, useWorkFromHome } from '../../services'
 import { formatDate } from '../../utils/date'
 import { Modal } from '../Modal'
@@ -22,8 +21,7 @@ type LedgerRow = {
   amount: number
   detail: string
   reason: string | null
-  /** WFH/Regularization only — real ledger entries carry a CREDIT/DEBIT direction; Leave rows are always usage (debit-like). */
-  transactionType?: LedgerTransactionType
+  transactionType: LedgerTransactionType
 }
 
 /** "1" / "0.5" — day amounts are always in half-day increments here. */
@@ -31,22 +29,41 @@ function formatDays(amount: number): string {
   return amount % 1 === 0 ? String(amount) : amount.toFixed(1)
 }
 
-function dateRangeLabel(startDate: string, endDate: string): string {
-  return startDate.slice(0, 10) === endDate.slice(0, 10)
-    ? formatDate(startDate)
-    : `${formatDate(startDate)} – ${formatDate(endDate)}`
+/** Shared shape across LeaveBalanceLedger / WorkFromHomeBalanceLedger / RegularizationBalanceLedger. */
+type BalanceLedgerEntry = {
+  id: string
+  createdAt: string
+  amount: number
+  description: string
+  reason: string | null
+  transactionType: LedgerTransactionType
+  status: 'ACTIVE' | 'INACTIVE' | 'DELETED'
+}
+
+function toRows(entries: BalanceLedgerEntry[]): LedgerRow[] {
+  return entries
+    .filter((entry) => entry.status === 'ACTIVE')
+    .slice()
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((entry) => ({
+      id: entry.id,
+      dateLabel: formatDate(entry.createdAt),
+      amount: entry.amount,
+      detail: entry.description,
+      reason: entry.reason,
+      transactionType: entry.transactionType,
+    }))
 }
 
 /**
  * Read-only ledger for a Leave/WFH/Regularization balance — "where did my
- * days go." WFH and Regularization balances come back with their ledger
- * embedded (`getBalance().ledger`) — no separate ledger endpoint — so those
- * two just read off the same balance query every other display on the page
- * already uses (shared cache, no extra request). Leave balances don't carry
- * an embedded ledger, so that one is still derived from the APPROVED-status
- * leave list. Fetches only while open, so it can be dropped anywhere a
- * balance number is shown (Home's My Balances card, the
- * Leave/WFH/Regularization tabs) without callers managing the fetch.
+ * days go." All three balance responses come back with their ledger
+ * embedded (`getBalance(s)().ledger`) — no separate ledger endpoint — so
+ * this just reads off the same balance query every other display on the
+ * page already uses (shared cache, no extra request). Fetches only while
+ * open, so it can be dropped anywhere a balance number is shown (Home's My
+ * Balances card, the Leave/WFH/Regularization tabs) without callers
+ * managing the fetch.
  */
 export function BalanceLedgerModal({
   open,
@@ -57,16 +74,7 @@ export function BalanceLedgerModal({
   onClose: () => void
   config: BalanceLedgerConfig | null
 }) {
-  const { user } = useSession()
-  const userId = user?.id
-  const isActive = open && Boolean(userId) && Boolean(config)
-
-  const { getLeaves } = useLeave({
-    listParams:
-      isActive && config?.type === 'leave' && userId
-        ? { userId, page: 1, limit: 100, status: 'APPROVED' }
-        : undefined,
-  })
+  const { getBalances: getLeaveBalances } = useLeave()
   const { getBalance: getWfhBalance } = useWorkFromHome()
   const { getBalance: getRegularizationBalance } = useRegularization()
 
@@ -76,44 +84,18 @@ export function BalanceLedgerModal({
   let isLoading = false
 
   if (config.type === 'leave') {
-    isLoading = getLeaves.isLoading
-    rows = (getLeaves.data?.leaves ?? [])
-      .filter((leave) => !config.leaveTypeId || leave.leaveTypeId === config.leaveTypeId)
-      .map((leave) => ({
-        id: leave.id,
-        dateLabel: dateRangeLabel(leave.startDate, leave.endDate),
-        amount: leave.amount,
-        detail: leave.leaveType?.name ?? 'Leave',
-        reason: leave.reason,
-      }))
+    isLoading = getLeaveBalances.isLoading
+    rows = toRows(
+      (getLeaveBalances.data ?? [])
+        .filter((balance) => !config.leaveTypeId || balance.leaveTypeId === config.leaveTypeId)
+        .flatMap((balance) => balance.ledger),
+    )
   } else if (config.type === 'wfh') {
     isLoading = getWfhBalance.isLoading
-    rows = (getWfhBalance.data?.ledger ?? [])
-      .filter((entry) => entry.status === 'ACTIVE')
-      .slice()
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map((entry) => ({
-        id: entry.id,
-        dateLabel: formatDate(entry.createdAt),
-        amount: entry.amount,
-        detail: entry.description,
-        reason: entry.reason,
-        transactionType: entry.transactionType,
-      }))
+    rows = toRows(getWfhBalance.data?.ledger ?? [])
   } else {
     isLoading = getRegularizationBalance.isLoading
-    rows = (getRegularizationBalance.data?.ledger ?? [])
-      .filter((entry) => entry.status === 'ACTIVE')
-      .slice()
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map((entry) => ({
-        id: entry.id,
-        dateLabel: formatDate(entry.createdAt),
-        amount: entry.amount,
-        detail: entry.description,
-        reason: entry.reason,
-        transactionType: entry.transactionType,
-      }))
+    rows = toRows(getRegularizationBalance.data?.ledger ?? [])
   }
 
   const isCredit = (row: LedgerRow) => row.transactionType === 'CREDIT'
