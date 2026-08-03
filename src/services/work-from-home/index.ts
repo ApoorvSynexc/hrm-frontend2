@@ -18,6 +18,8 @@ export type {
   WorkFromHomeListMeta,
   WorkFromHomeListParams,
   WorkFromHomeBalance,
+  WorkFromHomeBalanceLedger,
+  WorkFromHomeBalanceLedgerTransactionType,
 } from './types'
 
 export const workFromHomeKeys = {

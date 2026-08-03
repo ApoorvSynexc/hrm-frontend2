@@ -56,6 +56,42 @@ export type RegularizationListParams = {
   endDate?: string
 }
 
+/** Mirrors backend Prisma `TransactionType` enum. */
+export type RegularizationBalanceLedgerTransactionType = 'CREDIT' | 'DEBIT' | 'ADJUSTMENT' | 'CARRY_FORWARD'
+
+/**
+ * Mirrors backend Prisma `RegularizationBalanceLedger`. `amount` is always a
+ * positive count regardless of transactionType — CREDIT/DEBIT direction has
+ * to be read from transactionType. A DEBIT row starts status: INACTIVE while
+ * its regularization request is pending approval, then flips to ACTIVE on
+ * approval or gets deleted on rejection/withdrawal — so status: 'ACTIVE' is
+ * what actually happened to the balance.
+ */
+export type RegularizationBalanceLedger = {
+  id: string
+  tenantId: string
+  userId: string
+  regularizationBalanceId: string
+  transactionType: RegularizationBalanceLedgerTransactionType
+  amount: number
+  description: string
+  attendanceRegularizationId: string | null
+  balanceBeforeTransaction: number
+  balanceAfterTransaction: number
+  createdBy: string | null
+  reason: string | null
+  remarks: string | null
+  status: 'ACTIVE' | 'INACTIVE' | 'DELETED'
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * GET /v1/regularization/balance — `ledger` is included directly on this
+ * response (no separate ledger endpoint) — filter to status: 'ACTIVE'
+ * entries to see finalized balance movements only (INACTIVE entries are
+ * holds for still-pending regularization requests).
+ */
 export type RegularizationBalance = {
   id: string
   userId: string
@@ -63,4 +99,5 @@ export type RegularizationBalance = {
   totalDays: number
   usedDays: number
   remainingDays: number
+  ledger: RegularizationBalanceLedger[]
 } | null

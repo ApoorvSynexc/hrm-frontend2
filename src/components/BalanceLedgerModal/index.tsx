@@ -1,7 +1,7 @@
 import { FiCalendar } from 'react-icons/fi'
 import { useSession } from '../../hooks'
-import { useLeave, useRegularization, useWorkFromHome, type WorkFromHomeDayPart } from '../../services'
-import { dayjs, formatDate } from '../../utils/date'
+import { useLeave, useRegularization, useWorkFromHome } from '../../services'
+import { formatDate } from '../../utils/date'
 import { Modal } from '../Modal'
 import { Typography } from '../Typography'
 
@@ -14,12 +14,16 @@ export type BalanceLedgerConfig = {
   leaveTypeId?: string
 }
 
+type LedgerTransactionType = 'CREDIT' | 'DEBIT' | 'ADJUSTMENT' | 'CARRY_FORWARD'
+
 type LedgerRow = {
   id: string
   dateLabel: string
   amount: number
   detail: string
   reason: string | null
+  /** WFH/Regularization only — real ledger entries carry a CREDIT/DEBIT direction; Leave rows are always usage (debit-like). */
+  transactionType?: LedgerTransactionType
 }
 
 /** "1" / "0.5" — day amounts are always in half-day increments here. */
@@ -33,39 +37,15 @@ function dateRangeLabel(startDate: string, endDate: string): string {
     : `${formatDate(startDate)} – ${formatDate(endDate)}`
 }
 
-const DAY_PART_FRACTION: Record<'FIRST_HALF' | 'SECOND_HALF' | 'FULL_DAY', number> = {
-  FULL_DAY: 1,
-  FIRST_HALF: 0.5,
-  SECOND_HALF: 0.5,
-}
-
 /**
- * Mirrors computeRequestedDays in pages/me/work-from-home/helpers.ts — the
- * backend never persists WorkFromHome.amount (see WorkFromHome type), so the
- * day count has to be derived from the range + day-parts here too. Kept as a
- * local copy rather than importing across the pages→components boundary.
- */
-function computeWfhDays(
-  startDate: string,
-  endDate: string,
-  startDateDayPart: WorkFromHomeDayPart,
-  endDateDayPart: WorkFromHomeDayPart,
-): number {
-  const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
-  if (totalDays <= 1) {
-    return startDateDayPart !== 'FULL_DAY' || endDateDayPart !== 'FULL_DAY' ? 0.5 : 1
-  }
-  let days = totalDays
-  if (startDateDayPart !== 'FULL_DAY') days -= 0.5
-  if (endDateDayPart !== 'FULL_DAY') days -= 0.5
-  return days
-}
-
-/**
- * Read-only usage history for a Leave/WFH/Regularization balance — "where did
- * my used days go." Fetches its own APPROVED-status data (each request type's
- * own list endpoint) scoped to the logged-in user, only while open, so it can
- * be dropped anywhere a balance number is shown (Home's My Balances card, the
+ * Read-only ledger for a Leave/WFH/Regularization balance — "where did my
+ * days go." WFH and Regularization balances come back with their ledger
+ * embedded (`getBalance().ledger`) — no separate ledger endpoint — so those
+ * two just read off the same balance query every other display on the page
+ * already uses (shared cache, no extra request). Leave balances don't carry
+ * an embedded ledger, so that one is still derived from the APPROVED-status
+ * leave list. Fetches only while open, so it can be dropped anywhere a
+ * balance number is shown (Home's My Balances card, the
  * Leave/WFH/Regularization tabs) without callers managing the fetch.
  */
 export function BalanceLedgerModal({
@@ -87,18 +67,8 @@ export function BalanceLedgerModal({
         ? { userId, page: 1, limit: 100, status: 'APPROVED' }
         : undefined,
   })
-  const { getWorkFromHomes } = useWorkFromHome({
-    listParams:
-      isActive && config?.type === 'wfh' && userId
-        ? { userId, page: 1, limit: 100, status: 'APPROVED' }
-        : undefined,
-  })
-  const { getRegularizations } = useRegularization({
-    listParams:
-      isActive && config?.type === 'regularization' && userId
-        ? { userId, page: 1, limit: 100, status: 'APPROVED' }
-        : undefined,
-  })
+  const { getBalance: getWfhBalance } = useWorkFromHome()
+  const { getBalance: getRegularizationBalance } = useRegularization()
 
   if (!config) return null
 
@@ -117,35 +87,57 @@ export function BalanceLedgerModal({
         reason: leave.reason,
       }))
   } else if (config.type === 'wfh') {
-    isLoading = getWorkFromHomes.isLoading
-    rows = (getWorkFromHomes.data?.requests ?? []).map((wfh) => ({
-      id: wfh.id,
-      dateLabel: dateRangeLabel(wfh.startDate, wfh.endDate),
-      amount: computeWfhDays(wfh.startDate, wfh.endDate, wfh.startDateDayPart, wfh.endDateDayPart),
-      detail: 'Work From Home',
-      reason: wfh.reason,
-    }))
+    isLoading = getWfhBalance.isLoading
+    rows = (getWfhBalance.data?.ledger ?? [])
+      .filter((entry) => entry.status === 'ACTIVE')
+      .slice()
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((entry) => ({
+        id: entry.id,
+        dateLabel: formatDate(entry.createdAt),
+        amount: entry.amount,
+        detail: entry.description,
+        reason: entry.reason,
+        transactionType: entry.transactionType,
+      }))
   } else {
-    isLoading = getRegularizations.isLoading
-    rows = (getRegularizations.data?.requests ?? []).map((reg) => ({
-      id: reg.id,
-      dateLabel: formatDate(reg.date),
-      amount: DAY_PART_FRACTION[reg.dayPart],
-      detail: reg.dayPart === 'FULL_DAY' ? 'Full Day' : reg.dayPart === 'FIRST_HALF' ? 'First Half' : 'Second Half',
-      reason: reg.reason,
-    }))
+    isLoading = getRegularizationBalance.isLoading
+    rows = (getRegularizationBalance.data?.ledger ?? [])
+      .filter((entry) => entry.status === 'ACTIVE')
+      .slice()
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((entry) => ({
+        id: entry.id,
+        dateLabel: formatDate(entry.createdAt),
+        amount: entry.amount,
+        detail: entry.description,
+        reason: entry.reason,
+        transactionType: entry.transactionType,
+      }))
   }
 
-  const totalUsed = rows.reduce((sum, row) => sum + row.amount, 0)
+  const isCredit = (row: LedgerRow) => row.transactionType === 'CREDIT'
+  const totalUsed = rows.filter((row) => !isCredit(row)).reduce((sum, row) => sum + row.amount, 0)
+  const totalCredited = rows.filter(isCredit).reduce((sum, row) => sum + row.amount, 0)
 
   return (
     <Modal open={open} onClose={onClose} title={config.title} size="lg">
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between rounded-lg bg-surface-2 px-4 py-2.5">
-          <Typography variant="body-sm" color="body">
-            Total used
-          </Typography>
-          <Typography variant="h6">{formatDays(totalUsed)} days</Typography>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-1 items-center justify-between rounded-lg bg-surface-2 px-4 py-2.5">
+            <Typography variant="body-sm" color="body">
+              Total used
+            </Typography>
+            <Typography variant="h6">{formatDays(totalUsed)} days</Typography>
+          </div>
+          {totalCredited > 0 && (
+            <div className="flex flex-1 items-center justify-between rounded-lg bg-surface-2 px-4 py-2.5">
+              <Typography variant="body-sm" color="body">
+                Total allocated
+              </Typography>
+              <Typography variant="h6">{formatDays(totalCredited)} days</Typography>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -177,7 +169,12 @@ export function BalanceLedgerModal({
                     {row.reason ? ` · ${row.reason}` : ''}
                   </Typography>
                 </div>
-                <span className="shrink-0 rounded-full bg-accent-bg px-2.5 py-1 text-xs font-semibold text-accent">
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                    isCredit(row) ? 'bg-green-500/15 text-green-500' : 'bg-accent-bg text-accent'
+                  }`}
+                >
+                  {isCredit(row) ? '+' : '-'}
                   {formatDays(row.amount)} {row.amount === 1 ? 'day' : 'days'}
                 </span>
               </li>

@@ -17,6 +17,8 @@ export type {
   RegularizationListMeta,
   RegularizationListParams,
   RegularizationBalance,
+  RegularizationBalanceLedger,
+  RegularizationBalanceLedgerTransactionType,
 } from './types'
 
 export const regularizationKeys = {

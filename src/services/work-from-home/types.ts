@@ -63,11 +63,47 @@ export type WorkFromHomeListParams = {
   status?: Exclude<WorkFromHomeStatus, 'CANCELLED' | 'DELETED'>
 }
 
+/** Mirrors backend Prisma `TransactionType` enum. */
+export type WorkFromHomeBalanceLedgerTransactionType = 'CREDIT' | 'DEBIT' | 'ADJUSTMENT' | 'CARRY_FORWARD'
+
+/**
+ * Mirrors backend Prisma `WorkFromHomeBalanceLedger`. `amount` is always a
+ * positive day count regardless of transactionType — CREDIT/DEBIT direction
+ * has to be read from transactionType, not the sign of amount (the schema
+ * comment claims debits are stored negative, but the create call-sites all
+ * pass a positive value). A DEBIT row starts status: INACTIVE while its WFH
+ * request is pending approval, then flips to ACTIVE on approval or gets
+ * deleted on rejection/withdrawal — so status: 'ACTIVE' is what actually
+ * happened to the balance (the monthly CREDIT allocation + approved-usage
+ * DEBITs); INACTIVE rows are still-pending holds.
+ */
+export type WorkFromHomeBalanceLedger = {
+  id: string
+  tenantId: string
+  userId: string
+  workFromHomeBalanceId: string
+  transactionType: WorkFromHomeBalanceLedgerTransactionType
+  amount: number
+  description: string
+  workFromHomeId: string | null
+  balanceBeforeTransaction: number
+  balanceAfterTransaction: number
+  createdBy: string | null
+  reason: string | null
+  remarks: string | null
+  status: 'ACTIVE' | 'INACTIVE' | 'DELETED'
+  createdAt: string
+  updatedAt: string
+}
+
 /**
  * GET /v1/wfh/balance — always scoped to the caller (no userId override
  * possible). Withdrawing a request does not release its held balance back
  * (backend gap, not something the frontend can work around), so remainingDays
- * may under-report after a withdrawal.
+ * may under-report after a withdrawal. `ledger` is included directly on this
+ * response (no separate ledger endpoint) — filter to status: 'ACTIVE' entries
+ * to see finalized balance movements only (INACTIVE entries are holds for
+ * still-pending WFH requests).
  */
 export type WorkFromHomeBalance = {
   id: string
@@ -76,6 +112,7 @@ export type WorkFromHomeBalance = {
   totalDays: number
   usedDays: number
   remainingDays: number
+  ledger: WorkFromHomeBalanceLedger[]
 } | null
 
 /** DELETE /v1/wfh — the backend returns a synthetic object, not the full row. */
