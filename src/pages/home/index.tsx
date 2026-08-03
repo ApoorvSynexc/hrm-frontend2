@@ -12,10 +12,19 @@ import {
   FiSettings,
   FiThumbsUp,
 } from 'react-icons/fi'
-import { Avatar, Button, Card, Tabs, Typography } from '../../components'
+import {
+  Avatar,
+  BalanceLedgerModal,
+  BalanceRing,
+  Button,
+  Card,
+  Tabs,
+  Typography,
+  type BalanceLedgerConfig,
+} from '../../components'
 import { useSession } from '../../hooks'
 import { getErrorMessage } from '../../lib'
-import { useAttendance, useEmployee, useHoliday } from '../../services'
+import { useAttendance, useEmployee, useHoliday, useLeave, useRegularization, useWorkFromHome } from '../../services'
 import { dayjs, formatDate, formatMinutes, toISODate } from '../../utils/date'
 import { HolidayListModal } from './HolidayListModal'
 
@@ -50,6 +59,7 @@ export default function Home() {
   const [clockInMenuOpen, setClockInMenuOpen] = useState(false)
   const [holidayIndex, setHolidayIndex] = useState(0)
   const [holidaysOpen, setHolidaysOpen] = useState(false)
+  const [ledgerConfig, setLedgerConfig] = useState<BalanceLedgerConfig | null>(null)
 
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
 
@@ -58,6 +68,12 @@ export default function Home() {
   const { getTeamLeaveAndWfhToday } = useEmployee()
   const onLeaveToday = getTeamLeaveAndWfhToday.data?.leaves ?? []
   const workingRemotelyToday = getTeamLeaveAndWfhToday.data?.workFromHomes ?? []
+
+  const { getBalances: getLeaveBalances } = useLeave()
+  const { getBalance: getWfhBalance } = useWorkFromHome()
+  const { getBalance: getRegularizationBalance } = useRegularization()
+  const leaveBalances = getLeaveBalances.data ?? []
+  const balancesLoading = getLeaveBalances.isLoading || getWfhBalance.isLoading || getRegularizationBalance.isLoading
 
   const allHolidays = useMemo(
     () => [...(getHolidays.data?.holidays ?? [])].sort((a, b) => a.date.localeCompare(b.date)),
@@ -233,6 +249,54 @@ export default function Home() {
             )}
           </Card>
 
+          <Card title="My Balances">
+            {balancesLoading ? (
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="h-10 w-full animate-pulse rounded-lg bg-surface-2" />
+                ))}
+              </div>
+            ) : leaveBalances.length === 0 && !getWfhBalance.data && !getRegularizationBalance.data ? (
+              <p className="py-2 text-sm text-body">No balances set up for this year yet.</p>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-x-2 gap-y-3">
+                {leaveBalances.map((balance) => (
+                  <BalanceRing
+                    key={balance.id}
+                    label={balance.leaveType?.name ?? 'Leave'}
+                    value={balance.usedDays}
+                    total={balance.totalDays}
+                    onClick={() =>
+                      setLedgerConfig({
+                        type: 'leave',
+                        leaveTypeId: balance.leaveTypeId,
+                        title: `${balance.leaveType?.name ?? 'Leave'} Usage`,
+                      })
+                    }
+                  />
+                ))}
+
+                {getWfhBalance.data && (
+                  <BalanceRing
+                    label="Work From Home"
+                    value={getWfhBalance.data.usedDays}
+                    total={getWfhBalance.data.totalDays}
+                    onClick={() => setLedgerConfig({ type: 'wfh', title: 'Work From Home Usage' })}
+                  />
+                )}
+
+                {getRegularizationBalance.data && (
+                  <BalanceRing
+                    label="Regularization"
+                    value={getRegularizationBalance.data.usedDays}
+                    total={getRegularizationBalance.data.totalDays}
+                    onClick={() => setLedgerConfig({ type: 'regularization', title: 'Regularization Usage' })}
+                  />
+                )}
+              </div>
+            )}
+          </Card>
+
           <Card title="On Leave Today">
             {getTeamLeaveAndWfhToday.isLoading ? (
               <div className="flex flex-col gap-2">
@@ -378,6 +442,8 @@ export default function Home() {
         holidays={allHolidays}
         loading={getHolidays.isLoading}
       />
+
+      <BalanceLedgerModal open={Boolean(ledgerConfig)} onClose={() => setLedgerConfig(null)} config={ledgerConfig} />
     </div>
   )
 }

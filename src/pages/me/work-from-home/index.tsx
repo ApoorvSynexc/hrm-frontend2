@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { FiCheckCircle, FiClock, FiPlus } from 'react-icons/fi'
-import { Button, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
+import {
+  BalanceLedgerModal,
+  Button,
+  ConfirmDialog,
+  Table,
+  Typography,
+  type BalanceLedgerConfig,
+  type TableColumn,
+} from '../../../components'
 import { useSession } from '../../../hooks'
 import { useWorkFromHome, type WorkFromHome } from '../../../services'
 import { formatDate } from '../../../utils/date'
@@ -26,6 +34,8 @@ const STATUS_COLOR: Record<WorkFromHome['status'], string> = {
   CANCELLED: 'bg-surface-2 text-body',
   DELETED: 'bg-surface-2 text-body',
 }
+
+const LEDGER_CONFIG: BalanceLedgerConfig = { type: 'wfh', title: 'Work From Home Usage' }
 
 const DAY_PART_LABEL: Record<WorkFromHome['startDateDayPart'], string> = {
   FULL_DAY: 'Full Day',
@@ -58,6 +68,7 @@ export default function WorkFromHomePage() {
   const [page, setPage] = useState(1)
   const [manageOpen, setManageOpen] = useState(false)
   const [withdrawTarget, setWithdrawTarget] = useState<WorkFromHome | null>(null)
+  const [ledgerOpen, setLedgerOpen] = useState(false)
 
   const { getBalance, getWorkFromHomes, withdrawWorkFromHome } = useWorkFromHome({
     listParams: user ? { userId: user.id, page, limit: PAGE_SIZE } : undefined,
@@ -142,7 +153,7 @@ export default function WorkFromHomePage() {
       </div>
 
       {balance ? (
-        <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <BalanceStat
             icon={<FiCheckCircle size={15} />}
             label="Remaining"
@@ -155,6 +166,13 @@ export default function WorkFromHomePage() {
             value={balance.usedDays}
             accent="text-amber-500"
           />
+          <button
+            type="button"
+            onClick={() => setLedgerOpen(true)}
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            View usage history
+          </button>
         </div>
       ) : (
         <Typography variant="body-sm" color="body">
@@ -181,6 +199,8 @@ export default function WorkFromHomePage() {
       </div>
 
       <ManageWorkFromHomeModal open={manageOpen} onClose={() => setManageOpen(false)} balance={balance ?? null} />
+
+      <BalanceLedgerModal open={ledgerOpen} onClose={() => setLedgerOpen(false)} config={LEDGER_CONFIG} />
 
       <ConfirmDialog
         open={Boolean(withdrawTarget)}

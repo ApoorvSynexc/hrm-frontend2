@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { FiCheckCircle, FiClock, FiPlus } from 'react-icons/fi'
-import { Button, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
+import {
+  BalanceLedgerModal,
+  Button,
+  ConfirmDialog,
+  Table,
+  Typography,
+  type BalanceLedgerConfig,
+  type TableColumn,
+} from '../../../components'
 import { useSession } from '../../../hooks'
 import { useRegularization, type Regularization } from '../../../services'
 import { formatDate, formatTime } from '../../../utils/date'
@@ -25,6 +33,8 @@ const STATUS_COLOR: Record<Regularization['status'], string> = {
   CANCELLED: 'bg-surface-2 text-body',
   DELETED: 'bg-surface-2 text-body',
 }
+
+const LEDGER_CONFIG: BalanceLedgerConfig = { type: 'regularization', title: 'Regularization Usage' }
 
 const DAY_PART_LABEL: Record<Regularization['dayPart'], string> = {
   FULL_DAY: 'Full Day',
@@ -57,6 +67,7 @@ export default function Regularization() {
   const [page, setPage] = useState(1)
   const [manageOpen, setManageOpen] = useState(false)
   const [withdrawTarget, setWithdrawTarget] = useState<Regularization | null>(null)
+  const [ledgerOpen, setLedgerOpen] = useState(false)
 
   const { getBalance, getRegularizations, withdrawRegularization } = useRegularization({
     listParams: user ? { userId: user.id, page, limit: PAGE_SIZE } : undefined,
@@ -132,7 +143,7 @@ export default function Regularization() {
       </div>
 
       {balance ? (
-        <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <BalanceStat
             icon={<FiCheckCircle size={15} />}
             label="Remaining"
@@ -145,6 +156,13 @@ export default function Regularization() {
             value={balance.usedDays}
             accent="text-amber-500"
           />
+          <button
+            type="button"
+            onClick={() => setLedgerOpen(true)}
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            View usage history
+          </button>
         </div>
       ) : (
         <Typography variant="body-sm" color="body">
@@ -175,6 +193,8 @@ export default function Regularization() {
       </div>
 
       <ManageRegularizationModal open={manageOpen} onClose={() => setManageOpen(false)} />
+
+      <BalanceLedgerModal open={ledgerOpen} onClose={() => setLedgerOpen(false)} config={LEDGER_CONFIG} />
 
       <ConfirmDialog
         open={Boolean(withdrawTarget)}

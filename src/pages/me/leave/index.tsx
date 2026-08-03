@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { FiPlus } from 'react-icons/fi'
-import { Button, Card, ConfirmDialog, Table, Typography, type TableColumn } from '../../../components'
+import {
+  BalanceLedgerModal,
+  Button,
+  Card,
+  ConfirmDialog,
+  Table,
+  Typography,
+  type BalanceLedgerConfig,
+  type TableColumn,
+} from '../../../components'
 import { useSession } from '../../../hooks'
 import { useLeave, type Leave } from '../../../services'
 import { formatDate } from '../../../utils/date'
@@ -31,6 +40,7 @@ export default function Leave() {
   const [page, setPage] = useState(1)
   const [manageOpen, setManageOpen] = useState(false)
   const [withdrawTarget, setWithdrawTarget] = useState<Leave | null>(null)
+  const [ledgerConfig, setLedgerConfig] = useState<BalanceLedgerConfig | null>(null)
 
   const { getBalances, getLeaves, withdrawLeave } = useLeave({
     listParams: user ? { userId: user.id, page, limit: PAGE_SIZE } : undefined,
@@ -109,7 +119,18 @@ export default function Leave() {
         {balances.length > 0 ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {balances.map((balance) => (
-              <div key={balance.id} className="rounded-lg border border-border p-3">
+              <button
+                key={balance.id}
+                type="button"
+                onClick={() =>
+                  setLedgerConfig({
+                    type: 'leave',
+                    leaveTypeId: balance.leaveTypeId,
+                    title: `${balance.leaveType?.name ?? 'Leave'} Usage`,
+                  })
+                }
+                className="rounded-lg border border-border p-3 text-left transition-colors hover:border-accent"
+              >
                 <Typography variant="body-sm" color="body" className="truncate">
                   {balance.leaveType?.name ?? balance.leaveTypeId}
                 </Typography>
@@ -119,7 +140,7 @@ export default function Leave() {
                     / {balance.totalDays} days
                   </Typography>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         ) : (
@@ -145,6 +166,8 @@ export default function Leave() {
       </Card>
 
       <ManageLeaveModal open={manageOpen} onClose={() => setManageOpen(false)} balances={balances} />
+
+      <BalanceLedgerModal open={Boolean(ledgerConfig)} onClose={() => setLedgerConfig(null)} config={ledgerConfig} />
 
       <ConfirmDialog
         open={Boolean(withdrawTarget)}
