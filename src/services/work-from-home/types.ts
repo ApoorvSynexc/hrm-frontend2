@@ -17,7 +17,9 @@ export type WorkFromHome = {
    * never persists it onto the row — this stays at the Prisma default of 0
    * forever. Don't render it as "days requested"; derive that from
    * startDate/endDate + the day-parts instead (see computeRequestedDays in
-   * pages/me/work-from-home).
+   * pages/me/work-from-home). Also a Decimal column server-side (arrives as
+   * a string over JSON) — getWorkFromHomes() normalizes it via toNumber(),
+   * moot given the bug above, but kept honest.
    */
   amount: number
   reason: string | null
@@ -75,7 +77,10 @@ export type WorkFromHomeBalanceLedgerTransactionType = 'CREDIT' | 'DEBIT' | 'ADJ
  * request is pending approval, then flips to ACTIVE on approval or gets
  * deleted on rejection/withdrawal — so status: 'ACTIVE' is what actually
  * happened to the balance (the monthly CREDIT allocation + approved-usage
- * DEBITs); INACTIVE rows are still-pending holds.
+ * DEBITs); INACTIVE rows are still-pending holds. `amount`/
+ * `balanceBeforeTransaction`/`balanceAfterTransaction` are Decimal columns
+ * server-side (arrive as strings over JSON) — getBalance() normalizes them
+ * to numbers via toNumber() before this type is trusted anywhere.
  */
 export type WorkFromHomeBalanceLedger = {
   id: string
@@ -103,7 +108,10 @@ export type WorkFromHomeBalanceLedger = {
  * may under-report after a withdrawal. `ledger` is included directly on this
  * response (no separate ledger endpoint) — filter to status: 'ACTIVE' entries
  * to see finalized balance movements only (INACTIVE entries are holds for
- * still-pending WFH requests).
+ * still-pending WFH requests). totalDays/usedDays/remainingDays are Decimal
+ * columns server-side (arrive as strings over JSON) — getBalance()
+ * normalizes them to numbers via toNumber() before this type is trusted
+ * anywhere.
  */
 export type WorkFromHomeBalance = {
   id: string

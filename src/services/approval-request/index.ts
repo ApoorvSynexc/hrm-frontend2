@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks'
+import { toNumber } from '../../utils/helper'
 import type {
   ApproveRequestInput,
   PendingApproval,
@@ -8,6 +9,12 @@ import type {
   PendingApprovalsCount,
   RejectRequestInput,
 } from './types'
+
+/** Normalizes the embedded request's Decimal-as-string `amount` (Leave only — WFH/Regularization don't have one). */
+function normalizePendingApproval(approval: PendingApproval): PendingApproval {
+  if (!approval.request || approval.request.amount === undefined) return approval
+  return { ...approval, request: { ...approval.request, amount: toNumber(approval.request.amount) } }
+}
 
 export type {
   ApprovalModule,
@@ -76,7 +83,7 @@ export function useApprovalRequest({ listParams }: UseApprovalRequestOptions = {
       if (params.module) query.set('module', params.module)
 
       const res = await http.get<PendingApproval[]>(`/v1/approval-request/pending?${query.toString()}`)
-      return { approvals: res.data, meta: res.meta as PendingApprovalMeta }
+      return { approvals: res.data.map(normalizePendingApproval), meta: res.meta as PendingApprovalMeta }
     },
     enabled: Boolean(listParams),
     // Pending approvals change frequently and drive an action queue, so every

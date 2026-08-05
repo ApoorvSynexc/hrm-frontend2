@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks'
 import { currentYear } from '../../utils/date'
+import { toNumber } from '../../utils/helper'
 import type {
   CreateWorkFromHomeInput,
   WithdrawWorkFromHomeResult,
@@ -9,6 +10,23 @@ import type {
   WorkFromHomeListMeta,
   WorkFromHomeListParams,
 } from './types'
+
+/** Normalizes the Decimal-as-string fields on a balance response and its embedded ledger entries. */
+function normalizeWorkFromHomeBalance(balance: WorkFromHomeBalance): WorkFromHomeBalance {
+  if (!balance) return balance
+  return {
+    ...balance,
+    totalDays: toNumber(balance.totalDays),
+    usedDays: toNumber(balance.usedDays),
+    remainingDays: toNumber(balance.remainingDays),
+    ledger: balance.ledger.map((entry) => ({
+      ...entry,
+      amount: toNumber(entry.amount),
+      balanceBeforeTransaction: toNumber(entry.balanceBeforeTransaction),
+      balanceAfterTransaction: toNumber(entry.balanceAfterTransaction),
+    })),
+  }
+}
 
 export type {
   WorkFromHome,
@@ -44,7 +62,7 @@ export function useWorkFromHome({ listParams, balanceYear }: UseWorkFromHomeOpti
     queryKey: workFromHomeKeys.balance(year),
     queryFn: async () => {
       const res = await http.get<WorkFromHomeBalance>(`/v1/wfh/balance?year=${year}`)
-      return res.data
+      return normalizeWorkFromHomeBalance(res.data)
     },
   })
 
@@ -61,7 +79,10 @@ export function useWorkFromHome({ listParams, balanceYear }: UseWorkFromHomeOpti
       if (p.status) query.set('status', p.status)
 
       const res = await http.get<WorkFromHome[]>(`/v1/wfh/list?${query.toString()}`)
-      return { requests: res.data, meta: res.meta as WorkFromHomeListMeta }
+      return {
+        requests: res.data.map((wfh) => ({ ...wfh, amount: toNumber(wfh.amount) })),
+        meta: res.meta as WorkFromHomeListMeta,
+      }
     },
     enabled: Boolean(listParams?.userId),
   })

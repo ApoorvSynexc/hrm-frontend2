@@ -67,6 +67,9 @@ export type RegularizationBalanceLedgerTransactionType = 'CREDIT' | 'DEBIT' | 'A
  * approval or gets deleted on rejection/withdrawal — so status: 'ACTIVE' is
  * what actually happened to the balance.
  */
+// amount/balanceBeforeTransaction/balanceAfterTransaction are Decimal columns
+// server-side (arrive as strings over JSON) — getBalance() normalizes them
+// to numbers via toNumber() before this type is trusted anywhere.
 export type RegularizationBalanceLedger = {
   id: string
   tenantId: string
@@ -92,6 +95,9 @@ export type RegularizationBalanceLedger = {
  * entries to see finalized balance movements only (INACTIVE entries are
  * holds for still-pending regularization requests).
  */
+// totalDays/usedDays/remainingDays are Decimal columns server-side (arrive
+// as strings over JSON) — getBalance() normalizes them to numbers via
+// toNumber() before this type is trusted anywhere.
 export type RegularizationBalance = {
   id: string
   userId: string

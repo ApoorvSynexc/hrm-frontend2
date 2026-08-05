@@ -21,6 +21,7 @@ export type ApprovalRequestDetails = {
   id: string
   reason?: string | null
   status?: string
+  /** Decimal column server-side (Leave.amount) — arrives as a string over JSON; getPendingApprovals() normalizes it via toNumber(). */
   amount?: number
   startDate?: string
   endDate?: string

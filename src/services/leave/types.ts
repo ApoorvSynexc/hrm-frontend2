@@ -1,7 +1,12 @@
 /** Mirrors backend Prisma `RequestStatus` enum. */
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'CANCELLED' | 'DELETED'
 
-/** Mirrors backend Prisma `Leave`. */
+/**
+ * Mirrors backend Prisma `Leave`. `amount` is a Decimal column server-side —
+ * it arrives over JSON as a string (Decimal.toJSON() returns toString()),
+ * so getLeaves() normalizes it to a number via toNumber() before this type
+ * is trusted anywhere.
+ */
 export type Leave = {
   id: string
   userId: string
@@ -63,7 +68,10 @@ export type LeaveBalanceLedgerTransactionType = 'CREDIT' | 'DEBIT' | 'ADJUSTMENT
  * read from transactionType. A DEBIT row starts status: INACTIVE while its
  * leave request is pending approval, then flips to ACTIVE on approval or
  * gets deleted on rejection/withdrawal — so status: 'ACTIVE' is what
- * actually happened to the balance.
+ * actually happened to the balance. `amount`/`balanceBeforeTransaction`/
+ * `balanceAfterTransaction` are Decimal columns server-side (arrive as
+ * strings over JSON) — getBalances() normalizes them to numbers via
+ * toNumber() before this type is trusted anywhere.
  */
 export type LeaveBalanceLedger = {
   id: string
@@ -90,6 +98,9 @@ export type LeaveBalanceLedger = {
  * is included directly on each row (no separate ledger endpoint) — filter to
  * status: 'ACTIVE' entries to see finalized balance movements only
  * (INACTIVE entries are holds for still-pending leave requests).
+ * totalDays/usedDays/remainingDays are Decimal columns server-side (arrive
+ * as strings over JSON) — getBalances() normalizes them to numbers via
+ * toNumber() before this type is trusted anywhere.
  */
 export type LeaveBalance = {
   id: string

@@ -1,7 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks'
 import { currentYear } from '../../utils/date'
+import { toNumber } from '../../utils/helper'
 import type { CreateLeaveInput, Leave, LeaveBalance, LeaveListMeta, LeaveListParams } from './types'
+
+/** Normalizes the Decimal-as-string fields on a balance-list row's ledger entries. */
+function normalizeLeaveBalance(balance: LeaveBalance): LeaveBalance {
+  return {
+    ...balance,
+    totalDays: toNumber(balance.totalDays),
+    usedDays: toNumber(balance.usedDays),
+    remainingDays: toNumber(balance.remainingDays),
+    ledger: balance.ledger.map((entry) => ({
+      ...entry,
+      amount: toNumber(entry.amount),
+      balanceBeforeTransaction: toNumber(entry.balanceBeforeTransaction),
+      balanceAfterTransaction: toNumber(entry.balanceAfterTransaction),
+    })),
+  }
+}
 
 export type {
   Leave,
@@ -36,7 +53,7 @@ export function useLeave({ listParams, balanceYear }: UseLeaveOptions = {}) {
     queryKey: leaveKeys.balances(year),
     queryFn: async () => {
       const res = await http.get<LeaveBalance[]>(`/v1/leave/balance/list?year=${year}`)
-      return res.data
+      return res.data.map(normalizeLeaveBalance)
     },
   })
 
@@ -55,7 +72,7 @@ export function useLeave({ listParams, balanceYear }: UseLeaveOptions = {}) {
       if (p.endDate) query.set('endDate', p.endDate)
 
       const res = await http.get<Leave[]>(`/v1/leave/list?${query.toString()}`)
-      return { leaves: res.data, meta: res.meta as LeaveListMeta }
+      return { leaves: res.data.map((leave) => ({ ...leave, amount: toNumber(leave.amount) })), meta: res.meta as LeaveListMeta }
     },
     enabled: Boolean(listParams?.userId),
   })

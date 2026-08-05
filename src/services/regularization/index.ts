@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHttpClient } from '../../hooks'
 import { currentYear } from '../../utils/date'
+import { toNumber } from '../../utils/helper'
 import type {
   CreateRegularizationInput,
   Regularization,
@@ -8,6 +9,23 @@ import type {
   RegularizationListMeta,
   RegularizationListParams,
 } from './types'
+
+/** Normalizes the Decimal-as-string fields on a balance response and its embedded ledger entries. */
+function normalizeRegularizationBalance(balance: RegularizationBalance): RegularizationBalance {
+  if (!balance) return balance
+  return {
+    ...balance,
+    totalDays: toNumber(balance.totalDays),
+    usedDays: toNumber(balance.usedDays),
+    remainingDays: toNumber(balance.remainingDays),
+    ledger: balance.ledger.map((entry) => ({
+      ...entry,
+      amount: toNumber(entry.amount),
+      balanceBeforeTransaction: toNumber(entry.balanceBeforeTransaction),
+      balanceAfterTransaction: toNumber(entry.balanceAfterTransaction),
+    })),
+  }
+}
 
 export type {
   Regularization,
@@ -43,7 +61,7 @@ export function useRegularization({ listParams, balanceYear }: UseRegularization
     queryKey: regularizationKeys.balance(year),
     queryFn: async () => {
       const res = await http.get<RegularizationBalance>(`/v1/regularization/balance?year=${year}`)
-      return res.data
+      return normalizeRegularizationBalance(res.data)
     },
   })
 

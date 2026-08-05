@@ -12,3 +12,15 @@ export function buildMediaUrl(key: string): string {
   if (!key) return key
   return `${MEDIA_BASE_URL}/${key}`
 }
+
+/**
+ * Backend Prisma `Decimal` fields (Leave/WFH/Regularization balance and
+ * ledger day-counts) serialize over JSON as strings — Decimal's toJSON()
+ * returns toString(), not a number — so every service that reads one of
+ * these fields normalizes it through here right at the response boundary,
+ * keeping every type downstream a plain `number`.
+ */
+export function toNumber(value: number | string | null | undefined): number {
+  if (value === null || value === undefined) return 0
+  return typeof value === 'number' ? value : Number(value)
+}
